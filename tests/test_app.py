@@ -155,3 +155,5 @@ def test_my_pastes_with_session(client, test_db):
 def fix_bug():
     '''Bug fix'''
     return None
+
+# FIXME: This needs optimization
