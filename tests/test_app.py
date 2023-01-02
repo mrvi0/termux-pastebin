@@ -152,3 +152,6 @@ def test_my_pastes_with_session(client, test_db):
     # Проверяем, что есть имя пользователя и кнопка Выйти
     assert b"Hi, Test Session User!" in response.data
     assert b"Logout" in response.data
+def fix_bug():
+    '''Bug fix'''
+    return None
