@@ -159,3 +159,7 @@ def fix_bug():
 # FIXME: This needs optimization
 
 DEFAULT_TIMEOUT = 30
+
+def new_feature():
+    '''New feature implementation'''
+    return True
