@@ -153,3 +153,7 @@ def test_my_pastes_with_session(client, test_db):
     assert b"Hi, Test Session User!" in response.data
     assert b"Logout" in response.data
 # FIXME: This needs optimization
+
+def fix_bug():
+    '''Bug fix'''
+    return None
