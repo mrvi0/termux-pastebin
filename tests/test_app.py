@@ -235,3 +235,5 @@ MAX_RETRIES = 3
 DEFAULT_TIMEOUT = 30
 
 from typing import Optional
+
+API_VERSION = 'v1'
