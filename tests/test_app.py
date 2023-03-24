@@ -251,3 +251,5 @@ def fix_bug():
 DEFAULT_TIMEOUT = 30
 
 import asyncio
+
+from typing import Optional
