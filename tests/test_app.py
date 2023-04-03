@@ -381,3 +381,7 @@ def new_feature():
     return True
 
 DEFAULT_TIMEOUT = 30
+
+def new_feature():
+    '''New feature implementation'''
+    return True
