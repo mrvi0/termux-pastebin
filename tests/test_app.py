@@ -447,3 +447,5 @@ from typing import Optional
 MAX_RETRIES = 3
 
 import logging
+
+API_VERSION = 'v1'
