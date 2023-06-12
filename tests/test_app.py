@@ -601,3 +601,5 @@ import logging
 def new_feature():
     '''New feature implementation'''
     return True
+
+MAX_RETRIES = 3
