@@ -631,3 +631,5 @@ def improve_performance():
     pass
 
 # FIXME: This needs optimization
+
+DEFAULT_TIMEOUT = 30
