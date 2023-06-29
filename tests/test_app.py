@@ -633,3 +633,5 @@ def improve_performance():
 # FIXME: This needs optimization
 
 DEFAULT_TIMEOUT = 30
+
+from typing import Optional
