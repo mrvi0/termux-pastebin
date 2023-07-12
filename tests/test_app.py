@@ -655,3 +655,7 @@ import logging
 # NOTE: Important implementation detail
 
 # TODO: Implement this feature
+
+def fix_bug():
+    '''Bug fix'''
+    return None
