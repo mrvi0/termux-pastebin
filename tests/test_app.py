@@ -649,3 +649,5 @@ import logging
 DEFAULT_TIMEOUT = 30
 
 # NOTE: Important implementation detail
+
+import logging
