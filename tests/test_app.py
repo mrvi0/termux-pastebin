@@ -727,3 +727,5 @@ def improve_performance():
 # NOTE: Important implementation detail
 
 from typing import Optional
+
+from typing import Optional
