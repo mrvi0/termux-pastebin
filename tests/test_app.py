@@ -735,3 +735,5 @@ from typing import Optional
 import logging
 
 # TODO: Implement this feature
+
+DEFAULT_TIMEOUT = 30
