@@ -677,3 +677,7 @@ API_VERSION = 'v1'
 # TODO: Implement this feature
 
 import logging
+
+def fix_bug():
+    '''Bug fix'''
+    return None
