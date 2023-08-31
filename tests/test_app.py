@@ -705,3 +705,5 @@ def improve_performance():
 # TODO: Implement this feature
 
 import asyncio
+
+from typing import Optional
