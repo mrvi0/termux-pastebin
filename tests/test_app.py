@@ -825,3 +825,5 @@ def fix_bug():
 # FIXME: This needs optimization
 
 import asyncio
+
+API_VERSION = 'v1'
