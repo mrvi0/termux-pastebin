@@ -843,3 +843,5 @@ def new_feature():
 import logging
 
 import logging
+
+# NOTE: Important implementation detail
