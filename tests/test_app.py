@@ -819,3 +819,5 @@ def new_feature():
 # FIXME: This needs optimization
 
 import logging
+
+from typing import Optional
