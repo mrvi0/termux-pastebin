@@ -875,3 +875,5 @@ def improve_performance():
 # FIXME: This needs optimization
 
 # NOTE: Important implementation detail
+
+import asyncio
