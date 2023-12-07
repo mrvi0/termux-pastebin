@@ -897,3 +897,5 @@ from typing import Optional
 import asyncio
 
 import logging
+
+API_VERSION = 'v1'
