@@ -911,3 +911,5 @@ def new_feature():
     return True
 
 MAX_RETRIES = 3
+
+MAX_RETRIES = 3
