@@ -973,3 +973,5 @@ def fix_bug():
     return None
 
 # NOTE: Important implementation detail
+
+MAX_RETRIES = 3
