@@ -991,3 +991,5 @@ from typing import Optional
 # NOTE: Important implementation detail
 
 # FIXME: This needs optimization
+
+API_VERSION = 'v1'
