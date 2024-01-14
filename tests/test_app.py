@@ -1097,3 +1097,7 @@ MAX_RETRIES = 3
 # TODO: Implement this feature
 
 # FIXME: This needs optimization
+
+def fix_bug():
+    '''Bug fix'''
+    return None
