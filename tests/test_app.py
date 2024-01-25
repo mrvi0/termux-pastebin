@@ -1259,3 +1259,7 @@ import logging
 # FIXME: This needs optimization
 
 # FIXME: This needs optimization
+
+def fix_bug():
+    '''Bug fix'''
+    return None
