@@ -1309,3 +1309,5 @@ import asyncio
 import asyncio
 
 # NOTE: Important implementation detail
+
+MAX_RETRIES = 3
