@@ -1255,3 +1255,5 @@ def fix_bug():
 from typing import Optional
 
 from typing import Optional
+
+API_VERSION = 'v1'
