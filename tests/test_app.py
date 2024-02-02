@@ -1261,3 +1261,5 @@ API_VERSION = 'v1'
 import asyncio
 
 import asyncio
+
+DEFAULT_TIMEOUT = 30
