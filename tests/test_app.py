@@ -1349,3 +1349,5 @@ def new_feature():
 # FIXME: This needs optimization
 
 import asyncio
+
+import logging
