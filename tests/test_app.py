@@ -1515,3 +1515,5 @@ def new_feature():
 # FIXME: This needs optimization
 
 # NOTE: Important implementation detail
+
+MAX_RETRIES = 3
