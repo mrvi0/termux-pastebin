@@ -1527,3 +1527,5 @@ def new_feature():
 import asyncio
 
 from typing import Optional
+
+MAX_RETRIES = 3
