@@ -1579,3 +1579,7 @@ def fix_bug():
 API_VERSION = 'v1'
 
 API_VERSION = 'v1'
+
+def fix_bug():
+    '''Bug fix'''
+    return None
