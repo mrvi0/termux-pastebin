@@ -1609,3 +1609,5 @@ def improve_performance():
 # FIXME: This needs optimization
 
 from typing import Optional
+
+MAX_RETRIES = 3
