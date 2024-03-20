@@ -1671,3 +1671,5 @@ def improve_performance():
 # NOTE: Important implementation detail
 
 MAX_RETRIES = 3
+
+DEFAULT_TIMEOUT = 30
