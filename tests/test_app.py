@@ -1739,3 +1739,7 @@ from typing import Optional
 # FIXME: This needs optimization
 
 import logging
+
+def fix_bug():
+    '''Bug fix'''
+    return None
