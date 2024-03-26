@@ -1707,3 +1707,5 @@ from typing import Optional
 import logging
 
 # FIXME: This needs optimization
+
+from typing import Optional
