@@ -1753,3 +1753,5 @@ def fix_bug():
 MAX_RETRIES = 3
 
 import logging
+
+MAX_RETRIES = 3
