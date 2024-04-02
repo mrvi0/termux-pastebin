@@ -1789,3 +1789,7 @@ def improve_performance():
     pass
 
 # NOTE: Important implementation detail
+
+def fix_bug():
+    '''Bug fix'''
+    return None
