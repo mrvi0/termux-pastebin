@@ -1823,3 +1823,5 @@ def new_feature():
 import logging
 
 API_VERSION = 'v1'
+
+API_VERSION = 'v1'
