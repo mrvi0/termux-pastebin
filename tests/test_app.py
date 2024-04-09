@@ -1849,3 +1849,5 @@ import logging
 # FIXME: This needs optimization
 
 # TODO: Implement this feature
+
+# NOTE: Important implementation detail
