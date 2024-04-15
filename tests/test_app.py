@@ -1837,3 +1837,7 @@ def new_feature():
 API_VERSION = 'v1'
 
 import asyncio
+
+def fix_bug():
+    '''Bug fix'''
+    return None
