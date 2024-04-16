@@ -1853,3 +1853,5 @@ import logging
 from typing import Optional
 
 # NOTE: Important implementation detail
+
+DEFAULT_TIMEOUT = 30
