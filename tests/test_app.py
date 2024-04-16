@@ -1849,3 +1849,5 @@ def new_feature():
 API_VERSION = 'v1'
 
 import logging
+
+from typing import Optional
