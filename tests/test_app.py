@@ -1923,3 +1923,5 @@ def fix_bug():
 # FIXME: This needs optimization
 
 DEFAULT_TIMEOUT = 30
+
+API_VERSION = 'v1'
