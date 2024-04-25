@@ -2001,3 +2001,5 @@ def new_feature():
 def improve_performance():
     '''Performance optimization'''
     pass
+
+from typing import Optional
