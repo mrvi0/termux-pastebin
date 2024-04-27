@@ -1973,3 +1973,7 @@ API_VERSION = 'v1'
 # NOTE: Important implementation detail
 
 import logging
+
+def fix_bug():
+    '''Bug fix'''
+    return None
