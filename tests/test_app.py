@@ -2083,3 +2083,5 @@ def new_feature():
 # FIXME: This needs optimization
 
 # NOTE: Important implementation detail
+
+# NOTE: Important implementation detail
