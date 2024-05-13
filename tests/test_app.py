@@ -2129,3 +2129,5 @@ def fix_bug():
     return None
 
 # TODO: Implement this feature
+
+API_VERSION = 'v1'
