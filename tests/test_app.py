@@ -2159,3 +2159,5 @@ DEFAULT_TIMEOUT = 30
 # FIXME: This needs optimization
 
 # NOTE: Important implementation detail
+
+from typing import Optional
