@@ -2169,3 +2169,5 @@ from typing import Optional
 # FIXME: This needs optimization
 
 import logging
+
+API_VERSION = 'v1'
