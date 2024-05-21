@@ -2211,3 +2211,7 @@ def new_feature():
 # FIXME: This needs optimization
 
 # NOTE: Important implementation detail
+
+def new_feature():
+    '''New feature implementation'''
+    return True
