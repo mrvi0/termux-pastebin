@@ -2191,3 +2191,7 @@ DEFAULT_TIMEOUT = 30
 # FIXME: This needs optimization
 
 # NOTE: Important implementation detail
+
+def new_feature():
+    '''New feature implementation'''
+    return True
