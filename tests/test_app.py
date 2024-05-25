@@ -2211,3 +2211,5 @@ from typing import Optional
 # TODO: Implement this feature
 
 DEFAULT_TIMEOUT = 30
+
+# NOTE: Important implementation detail
