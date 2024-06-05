@@ -2347,3 +2347,5 @@ def fix_bug():
 # FIXME: This needs optimization
 
 import asyncio
+
+from typing import Optional
