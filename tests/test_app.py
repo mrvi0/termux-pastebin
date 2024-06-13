@@ -2313,3 +2313,5 @@ def improve_performance():
 # FIXME: This needs optimization
 
 import logging
+
+from typing import Optional
