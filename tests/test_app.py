@@ -2425,3 +2425,5 @@ def fix_bug():
 # FIXME: This needs optimization
 
 # FIXME: This needs optimization
+
+# NOTE: Important implementation detail
