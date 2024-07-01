@@ -2599,3 +2599,7 @@ def new_feature():
 API_VERSION = 'v1'
 
 import logging
+
+def fix_bug():
+    '''Bug fix'''
+    return None
