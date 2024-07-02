@@ -2609,3 +2609,7 @@ DEFAULT_TIMEOUT = 30
 # FIXME: This needs optimization
 
 # NOTE: Important implementation detail
+
+def fix_bug():
+    '''Bug fix'''
+    return None
