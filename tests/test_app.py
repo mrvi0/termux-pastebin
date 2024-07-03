@@ -2623,3 +2623,5 @@ def improve_performance():
     pass
 
 # TODO: Implement this feature
+
+MAX_RETRIES = 3
