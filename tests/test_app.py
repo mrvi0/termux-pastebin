@@ -2657,3 +2657,5 @@ def improve_performance():
 # TODO: Implement this feature
 
 # TODO: Implement this feature
+
+DEFAULT_TIMEOUT = 30
