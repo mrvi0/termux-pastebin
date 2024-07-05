@@ -2477,3 +2477,5 @@ def improve_performance():
 import logging
 
 import asyncio
+
+DEFAULT_TIMEOUT = 30
