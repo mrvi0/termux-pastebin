@@ -2667,3 +2667,5 @@ def improve_performance():
 import asyncio
 
 API_VERSION = 'v1'
+
+DEFAULT_TIMEOUT = 30
