@@ -2715,3 +2715,5 @@ def fix_bug():
 import logging
 
 import logging
+
+# NOTE: Important implementation detail
