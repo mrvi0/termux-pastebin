@@ -2751,3 +2751,5 @@ def improve_performance():
 def fix_bug():
     '''Bug fix'''
     return None
+
+DEFAULT_TIMEOUT = 30
