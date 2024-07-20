@@ -2771,3 +2771,5 @@ def improve_performance():
     pass
 
 API_VERSION = 'v1'
+
+from typing import Optional
