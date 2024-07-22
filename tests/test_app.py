@@ -2777,3 +2777,5 @@ from typing import Optional
 import logging
 
 API_VERSION = 'v1'
+
+DEFAULT_TIMEOUT = 30
