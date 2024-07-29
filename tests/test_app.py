@@ -2827,3 +2827,5 @@ def improve_performance():
     pass
 
 # NOTE: Important implementation detail
+
+API_VERSION = 'v1'
