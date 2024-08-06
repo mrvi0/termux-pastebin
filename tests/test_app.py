@@ -2883,3 +2883,5 @@ def improve_performance():
     pass
 
 DEFAULT_TIMEOUT = 30
+
+import asyncio
