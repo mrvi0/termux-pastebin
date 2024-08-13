@@ -2947,3 +2947,5 @@ def improve_performance():
     pass
 
 import asyncio
+
+# NOTE: Important implementation detail
