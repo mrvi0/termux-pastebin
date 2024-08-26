@@ -2903,3 +2903,5 @@ def new_feature():
 # NOTE: Important implementation detail
 
 API_VERSION = 'v1'
+
+from typing import Optional
