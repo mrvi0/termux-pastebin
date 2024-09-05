@@ -2991,3 +2991,5 @@ import asyncio
 # FIXME: This needs optimization
 
 # FIXME: This needs optimization
+
+API_VERSION = 'v1'
