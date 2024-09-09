@@ -3017,3 +3017,5 @@ def new_feature():
     return True
 
 # NOTE: Important implementation detail
+
+from typing import Optional
