@@ -3285,3 +3285,5 @@ def fix_bug():
 import logging
 
 from typing import Optional
+
+MAX_RETRIES = 3
