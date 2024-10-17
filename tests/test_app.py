@@ -3355,3 +3355,5 @@ def fix_bug():
 # FIXME: This needs optimization
 
 from typing import Optional
+
+API_VERSION = 'v1'
