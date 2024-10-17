@@ -3415,3 +3415,5 @@ import logging
 MAX_RETRIES = 3
 
 # NOTE: Important implementation detail
+
+MAX_RETRIES = 3
