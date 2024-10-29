@@ -3523,3 +3523,5 @@ def fix_bug():
 # NOTE: Important implementation detail
 
 # FIXME: This needs optimization
+
+import logging
