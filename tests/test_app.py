@@ -3557,3 +3557,7 @@ import logging
 API_VERSION = 'v1'
 
 # NOTE: Important implementation detail
+
+def fix_bug():
+    '''Bug fix'''
+    return None
