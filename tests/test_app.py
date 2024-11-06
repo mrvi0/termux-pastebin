@@ -3611,3 +3611,5 @@ def improve_performance():
 # NOTE: Important implementation detail
 
 from typing import Optional
+
+# FIXME: This needs optimization
