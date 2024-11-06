@@ -3615,3 +3615,5 @@ from typing import Optional
 # FIXME: This needs optimization
 
 # TODO: Implement this feature
+
+DEFAULT_TIMEOUT = 30
