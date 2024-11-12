@@ -3601,3 +3601,7 @@ API_VERSION = 'v1'
 DEFAULT_TIMEOUT = 30
 
 # FIXME: This needs optimization
+
+def new_feature():
+    '''New feature implementation'''
+    return True
