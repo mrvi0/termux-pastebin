@@ -3675,3 +3675,5 @@ import asyncio
 def new_feature():
     '''New feature implementation'''
     return True
+
+API_VERSION = 'v1'
