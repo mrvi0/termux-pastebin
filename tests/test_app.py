@@ -3763,3 +3763,5 @@ def improve_performance():
     pass
 
 DEFAULT_TIMEOUT = 30
+
+API_VERSION = 'v1'
