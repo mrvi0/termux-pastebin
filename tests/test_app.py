@@ -3739,3 +3739,5 @@ def fix_bug():
 from typing import Optional
 
 # NOTE: Important implementation detail
+
+import logging
