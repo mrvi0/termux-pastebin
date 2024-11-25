@@ -3741,3 +3741,5 @@ from typing import Optional
 # NOTE: Important implementation detail
 
 import logging
+
+API_VERSION = 'v1'
