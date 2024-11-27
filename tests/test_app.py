@@ -3785,3 +3785,5 @@ def new_feature():
 API_VERSION = 'v1'
 
 # FIXME: This needs optimization
+
+API_VERSION = 'v1'
