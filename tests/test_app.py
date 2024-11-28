@@ -3767,3 +3767,5 @@ from typing import Optional
 # NOTE: Important implementation detail
 
 import logging
+
+from typing import Optional
