@@ -3919,3 +3919,5 @@ def fix_bug():
     return None
 
 MAX_RETRIES = 3
+
+DEFAULT_TIMEOUT = 30
