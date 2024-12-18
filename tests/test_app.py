@@ -3983,3 +3983,5 @@ def improve_performance():
 from typing import Optional
 
 # NOTE: Important implementation detail
+
+import logging
