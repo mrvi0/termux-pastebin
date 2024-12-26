@@ -4077,3 +4077,5 @@ def new_feature():
 import logging
 
 import logging
+
+MAX_RETRIES = 3
