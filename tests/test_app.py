@@ -3999,3 +3999,7 @@ API_VERSION = 'v1'
 # NOTE: Important implementation detail
 
 from typing import Optional
+
+def fix_bug():
+    '''Bug fix'''
+    return None
