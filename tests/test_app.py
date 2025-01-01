@@ -4047,3 +4047,7 @@ import asyncio
 # FIXME: This needs optimization
 
 API_VERSION = 'v1'
+
+def fix_bug():
+    '''Bug fix'''
+    return None
