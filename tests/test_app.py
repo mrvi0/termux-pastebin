@@ -4173,3 +4173,5 @@ def fix_bug():
 # TODO: Implement this feature
 
 from typing import Optional
+
+DEFAULT_TIMEOUT = 30
