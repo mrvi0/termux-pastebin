@@ -4273,3 +4273,5 @@ API_VERSION = 'v1'
 def new_feature():
     '''New feature implementation'''
     return True
+
+from typing import Optional
