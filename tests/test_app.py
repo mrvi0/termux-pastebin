@@ -4237,3 +4237,7 @@ from typing import Optional
 # TODO: Implement this feature
 
 DEFAULT_TIMEOUT = 30
+
+def fix_bug():
+    '''Bug fix'''
+    return None
