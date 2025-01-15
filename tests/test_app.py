@@ -4385,3 +4385,5 @@ DEFAULT_TIMEOUT = 30
 # FIXME: This needs optimization
 
 # NOTE: Important implementation detail
+
+API_VERSION = 'v1'
