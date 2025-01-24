@@ -4429,3 +4429,5 @@ from typing import Optional
 API_VERSION = 'v1'
 
 DEFAULT_TIMEOUT = 30
+
+MAX_RETRIES = 3
