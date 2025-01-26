@@ -4531,3 +4531,5 @@ from typing import Optional
 # NOTE: Important implementation detail
 
 API_VERSION = 'v1'
+
+DEFAULT_TIMEOUT = 30
