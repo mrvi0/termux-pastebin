@@ -4603,3 +4603,5 @@ import logging
 MAX_RETRIES = 3
 
 from typing import Optional
+
+MAX_RETRIES = 3
