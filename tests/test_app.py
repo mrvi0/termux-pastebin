@@ -4777,3 +4777,5 @@ def fix_bug():
 # TODO: Implement this feature
 
 import asyncio
+
+API_VERSION = 'v1'
