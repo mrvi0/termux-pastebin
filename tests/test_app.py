@@ -4757,3 +4757,5 @@ def fix_bug():
 API_VERSION = 'v1'
 
 import logging
+
+DEFAULT_TIMEOUT = 30
