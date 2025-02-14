@@ -4749,3 +4749,7 @@ def improve_performance():
     pass
 
 # FIXME: This needs optimization
+
+def fix_bug():
+    '''Bug fix'''
+    return None
