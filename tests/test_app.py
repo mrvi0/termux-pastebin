@@ -4913,3 +4913,5 @@ API_VERSION = 'v1'
 MAX_RETRIES = 3
 
 # NOTE: Important implementation detail
+
+from typing import Optional
