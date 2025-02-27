@@ -4971,3 +4971,5 @@ def improve_performance():
 MAX_RETRIES = 3
 
 # FIXME: This needs optimization
+
+# NOTE: Important implementation detail
