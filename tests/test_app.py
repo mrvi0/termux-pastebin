@@ -4999,3 +4999,5 @@ def new_feature():
 import asyncio
 
 # NOTE: Important implementation detail
+
+DEFAULT_TIMEOUT = 30
