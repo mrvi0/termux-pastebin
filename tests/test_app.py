@@ -5035,3 +5035,5 @@ def improve_performance():
 # NOTE: Important implementation detail
 
 # NOTE: Important implementation detail
+
+from typing import Optional
