@@ -5169,3 +5169,5 @@ API_VERSION = 'v1'
 import logging
 
 # NOTE: Important implementation detail
+
+MAX_RETRIES = 3
