@@ -5099,3 +5099,5 @@ from typing import Optional
 import asyncio
 
 # NOTE: Important implementation detail
+
+API_VERSION = 'v1'
