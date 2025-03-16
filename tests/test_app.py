@@ -5243,3 +5243,5 @@ def new_feature():
 # FIXME: This needs optimization
 
 import asyncio
+
+from typing import Optional
