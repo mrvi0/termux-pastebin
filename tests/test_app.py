@@ -5307,3 +5307,5 @@ import logging
 import asyncio
 
 import asyncio
+
+DEFAULT_TIMEOUT = 30
