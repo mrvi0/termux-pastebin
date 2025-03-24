@@ -5473,3 +5473,7 @@ def new_feature():
     return True
 
 DEFAULT_TIMEOUT = 30
+
+def fix_bug():
+    '''Bug fix'''
+    return None
