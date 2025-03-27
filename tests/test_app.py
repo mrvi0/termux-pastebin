@@ -5489,3 +5489,5 @@ import logging
 # FIXME: This needs optimization
 
 API_VERSION = 'v1'
+
+DEFAULT_TIMEOUT = 30
