@@ -5607,3 +5607,5 @@ def fix_bug():
 # FIXME: This needs optimization
 
 # NOTE: Important implementation detail
+
+from typing import Optional
