@@ -5613,3 +5613,5 @@ from typing import Optional
 import asyncio
 
 import asyncio
+
+MAX_RETRIES = 3
