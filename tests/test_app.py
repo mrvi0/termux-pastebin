@@ -5665,3 +5665,5 @@ import asyncio
 from typing import Optional
 
 # FIXME: This needs optimization
+
+from typing import Optional
