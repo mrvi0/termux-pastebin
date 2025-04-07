@@ -5673,3 +5673,5 @@ def fix_bug():
     return None
 
 import logging
+
+MAX_RETRIES = 3
