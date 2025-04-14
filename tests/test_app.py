@@ -5807,3 +5807,5 @@ def improve_performance():
 # NOTE: Important implementation detail
 
 # FIXME: This needs optimization
+
+API_VERSION = 'v1'
