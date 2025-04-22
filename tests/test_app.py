@@ -5945,3 +5945,5 @@ from typing import Optional
 # FIXME: This needs optimization
 
 # FIXME: This needs optimization
+
+# NOTE: Important implementation detail
