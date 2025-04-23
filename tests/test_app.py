@@ -5949,3 +5949,5 @@ def improve_performance():
 import logging
 
 from typing import Optional
+
+DEFAULT_TIMEOUT = 30
