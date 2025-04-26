@@ -1,0 +1,109 @@
+name: 🐞 Отчет об ошибке (Bug Report)
+description: Сообщить об ошибке, чтобы помочь нам улучшить проект.
+title: "[Баг] Краткое описание проблемы"
+labels: ["bug", "needs triage"]
+assignees:
+  - your_username # Укажи свой GitHub username или оставь пустым
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Спасибо, что нашли время сообщить об ошибке! Пожалуйста, заполните форму как можно подробнее.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Описание ошибки
+      description: Четкое и краткое описание того, что представляет собой ошибка.
+      placeholder: Опишите проблему здесь...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Шаги для воспроизведения
+      description: Как мы можем воспроизвести проблему? Пожалуйста, будьте максимально конкретны.
+      placeholder: |
+        1. Перейти к '...'
+        2. Нажать на '....'
+        3. Прокрутить до '....'
+        4. Увидеть ошибку '...'
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Ожидаемое поведение
+      description: Что вы ожидали увидеть?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Фактическое поведение
+      description: Что произошло на самом деле? Приложите скриншоты, если возможно.
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Версия проекта
+      description: Какая версия проекта используется? (например, 1.0.0, commit hash)
+      placeholder: "например, 1.0.0 или main@commit_hash"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Операционная система
+      description: На какой ОС вы столкнулись с проблемой?
+      options:
+        - Windows
+        - macOS
+        - Linux (укажите дистрибутив в доп. контексте)
+        - Другое
+    validations:
+      required: false
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Среда выполнения
+      description: Где запускался код?
+      options:
+        - Docker
+        - Локально (Native)
+        - Сервер (Systemd/Другое)
+    validations:
+      required: false
+
+  - type: input
+    id: language-version
+    attributes:
+      label: Версия Python / Node.js
+      description: Какая версия языка используется?
+      placeholder: "например, Python 3.10.4 или Node.js 18.12.0"
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Логи и скриншоты
+      description: Пожалуйста, скопируйте и вставьте сюда все релевантные логи или ошибки. Обязательно удалите любые чувствительные данные!
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Дополнительный контекст
+      description: Любая другая информация о проблеме.
+    validations:
+      required: false

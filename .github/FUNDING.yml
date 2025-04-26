@@ -1,0 +1,9 @@
+# Файл для отображения кнопки "Sponsor" в репозитории
+# Замените на свои платформы
+
+github: [mrvi0] # Ваш GitHub Sponsors username
+# patreon: your_patreon_username
+# open_collective: your_open_collective_project
+# ko_fi: your_ko_fi_username
+# tidelift: your_tidelift_package_name
+custom: ['https://www.donationalerts.com/r/mrvi0'] # Ссылка на кастомную страницу донатов

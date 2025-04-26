@@ -1,0 +1,17 @@
+version: '3.9'
+
+services:
+  app:
+    container_name: project-name-app
+    build: ./src
+    env_file:
+      - .env
+    ports:
+      - "${APP_PORT}:3000"
+    restart: unless-stopped
+    networks:
+      - default
+
+networks:
+  default:
+    driver: bridge

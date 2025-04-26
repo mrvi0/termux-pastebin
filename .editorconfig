@@ -1,0 +1,27 @@
+# EditorConfig помогает поддерживать единый стиль кода в различных редакторах и IDE
+# https://editorconfig.org
+
+root = true
+
+[*]
+indent_style = space # Использовать пробелы для отступов
+indent_size = 4      # Размер отступа - 4 пробела
+end_of_line = lf     # Использовать Unix-стиль окончаний строк (LF)
+charset = utf-8      # Кодировка файлов - UTF-8
+trim_trailing_whitespace = true # Удалять пробелы в конце строк
+insert_final_newline = true     # Вставлять пустую строку в конце файла
+
+[*.md] # Настройки для Markdown
+trim_trailing_whitespace = false
+
+[*.py] # Настройки для Python (можно оставить [*] или уточнить)
+indent_size = 4
+
+[*.js] # Настройки для JavaScript
+indent_size = 2 # Часто используют 2 пробела для JS
+
+[*.yml]
+[*.yaml]
+indent_size = 2 # YAML использует 2 пробела
+
+# Можете добавить секции для других типов файлов (html, css, etc.)

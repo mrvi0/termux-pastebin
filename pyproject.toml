@@ -1,0 +1,66 @@
+[tool.poetry]
+name = "your_project_name"
+version = "0.1.0"
+description = "Краткое описание вашего проекта"
+authors = ["Your Name <your_email@example.com>"]
+license = "AGPL-3.0-or-later" # Укажите вашу лицензию
+readme = "README.md"
+packages = [{include = "src"}] # Указываем, что пакет находится в src
+
+[tool.poetry.dependencies]
+python = "^3.10" # Минимальная версия Python
+python-dotenv = "^1.0.0"
+# Добавьте сюда основные зависимости вашего проекта
+# Например:
+# requests = "^2.31.0"
+# aiogram = "^3.0.0" # Если это телеграм бот на aiogram 3
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+ruff = "^0.1.0" # Линтер и форматер
+# Добавьте другие dev-зависимости (например, pytest-cov для покрытия)
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+# --- Конфигурация Ruff (Линтер и Форматер) ---
+[tool.ruff]
+line-length = 88 # Совместимо с Black по умолчанию
+# Выберите правила для проверки. Можно начать с базовых и добавлять по мере необходимости.
+# E = pycodestyle errors, W = pycodestyle warnings, F = pyflakes, I = isort
+select = ["E", "W", "F", "I"]
+ignore = [] # Какие правила игнорировать (например, "E501" если не хотите ограничивать длину строки)
+
+# Исключить директории из проверки
+exclude = [
+    ".git",
+    ".pytest_cache",
+    ".venv",
+    "__pycache__",
+    "build",
+    "dist",
+    "docs",
+]
+
+[tool.ruff.format]
+# Настройки, аналогичные Black
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "lf"
+
+[tool.ruff.isort]
+# Настройки сортировки импортов
+known-first-party = ["src"] # Укажите здесь ваш основной пакет (src)
+
+# --- Конфигурация Pytest ---
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q -v --color=yes" # Опции командной строки pytest
+testpaths = [
+    "tests", # Директория с тестами
+]
+pythonpath = ["src"] # Добавить src в PYTHONPATH для тестов
+# Опционально: настройка покрытия тестами
+# addopts = "--cov=src --cov-report=term-missing --cov-fail-under=80" # Требовать 80% покрытия

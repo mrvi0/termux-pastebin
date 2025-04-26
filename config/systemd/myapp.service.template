@@ -1,0 +1,51 @@
+# Шаблон systemd unit файла для [Название Вашего Проекта]
+# Скопируйте этот файл в /etc/systemd/system/your_project_name.service
+# Замените плейсхолдеры и выполните:
+# sudo systemctl daemon-reload
+# sudo systemctl enable your_project_name.service
+# sudo systemctl start your_project_name.service
+#
+# Для просмотра логов:
+# sudo journalctl -u your_project_name.service -f
+
+[Unit]
+Description=Your Project Name Application Service
+After=network.target
+# Если ваше приложение зависит от БД, раскомментируйте и укажите сервис БД:
+# After=network.target postgresql.service redis.service
+# Requires=postgresql.service redis.service
+
+[Service]
+# --- ОБЯЗАТЕЛЬНО ИЗМЕНИТЕ ЭТИ ПУТИ И ПОЛЬЗОВАТЕЛЯ ---
+User=your_app_user          # Пользователь, от имени которого будет запускаться сервис (НЕ root!)
+Group=your_app_group        # Группа этого пользователя
+WorkingDirectory=/home/your_app_user/your_project_name # Абсолютный путь к КОРНЮ вашего проекта
+
+# Путь к файлу с переменными окружения
+EnvironmentFile=/home/your_app_user/your_project_name/.env
+
+# --- Команда запуска (выберите или адаптируйте для вашего приложения) ---
+
+# Для Python с виртуальным окружением:
+ExecStart=/home/your_app_user/your_project_name/.venv/bin/python -m src.main
+# Или если main.py в корне src:
+# ExecStart=/home/your_app_user/your_project_name/.venv/bin/python src/main.py
+
+# Для Node.js:
+# ExecStart=/usr/bin/node /home/your_app_user/your_project_name/src/index.js
+# Или если используется менеджер процессов типа pm2:
+# ExecStart=/home/your_app_user/.nvm/versions/node/v18.12.0/bin/pm2 start /home/your_app_user/your_project_name/ecosystem.config.js --env production --no-daemon
+
+# Перезапуск сервиса в случае сбоя
+Restart=on-failure
+RestartSec=5s
+
+# Стандартный вывод и ошибки направляются в journald
+StandardOutput=journal
+StandardError=journal
+
+# Увеличьте лимит открытых файлов, если нужно
+# LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

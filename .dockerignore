@@ -1,0 +1,75 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Docker
+.dockerignore
+Dockerfile*
+docker-compose*.yml
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+*.egg-info/
+pip-wheel-metadata/
+.installed.cfg
+*.egg
+pip-log.txt
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE / Editor config
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Environment variables
+.env
+.env.*
+!/.env.example # Не игнорировать .env.example
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
+
+# Build artifacts
+build/
+dist/
+*.tar.gz
+*.zip
+
+# Tests & Docs (если они не нужны в финальном образе)
+tests/
+docs/
+*.md # Игнорировать все Markdown, кроме тех, что явно добавлены через COPY
+
+# Other
+*.bak
+*.tmp

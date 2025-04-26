@@ -1,0 +1,44 @@
+name: ✨ Запрос новой функциональности (Feature Request)
+description: Предложить идею для этого проекта.
+title: "[Фича] Краткое описание идеи"
+labels: ["enhancement", "needs discussion"]
+assignees:
+  - your_username # Укажи свой GitHub username или оставь пустым
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Спасибо за вашу идею! Пожалуйста, опишите ее как можно подробнее.
+
+  - type: textarea
+    id: problem-description
+    attributes:
+      label: Связана ли ваша идея с проблемой? Опишите ее.
+      description: Четкое и краткое описание проблемы, которую решает ваша фича.
+      placeholder: "Меня всегда раздражает, когда [...], и я хотел бы, чтобы [...]"
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution-description
+    attributes:
+      label: Опишите решение, которое вы бы хотели видеть
+      description: Четкое и краткое описание того, что вы хотите, чтобы произошло.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives-considered
+    attributes:
+      label: Опишите альтернативы, которые вы рассматривали
+      description: Краткое описание любых альтернативных решений или функций, которые вы рассматривали.
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Дополнительный контекст
+      description: Добавьте любой другой контекст или скриншоты о запросе функции здесь.
+    validations:
+      required: false

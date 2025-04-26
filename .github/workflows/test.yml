@@ -1,0 +1,57 @@
+name: Run Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11"]
+
+    services:
+      postgres:
+        image: postgres:14-alpine
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Python dependencies (using Poetry)
+        if: matrix.python-version && hashFiles('**/pyproject.toml')
+        run: |
+          pip install poetry
+          poetry install --no-interaction --no-root
+
+      - name: Install Python dependencies (using requirements.txt)
+        if: matrix.python-version && hashFiles('**/requirements.txt') && !hashFiles('**/pyproject.toml')
+        run: |
+          pip install -r requirements.txt
+          pip install pytest # Установите pytest или ваш тестовый фреймворк
+
+      - name: Run Python tests with Pytest
+        if: matrix.python-version
+        env:
+          PYTHONPATH: src # Убедитесь, что pytest может найти ваши модули в src/
+        run: |
+          pytest tests/

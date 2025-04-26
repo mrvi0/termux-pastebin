@@ -1,0 +1,18 @@
+# Этот файл используется, если вы не используете Poetry или PDM.
+# Заполните его основными зависимостями.
+# Рекомендуется генерировать его из виртуального окружения:
+# pip freeze > requirements.txt
+#
+# Или лучше использовать pip-tools:
+# 1. Создайте requirements.in с основными зависимостями (без версий или с >=)
+# 2. pip install pip-tools
+# 3. pip-compile requirements.in > requirements.txt
+#
+# Пример содержимого requirements.in:
+# python-dotenv
+# requests
+# aiogram
+
+# Пример сгенерированного requirements.txt:
+python-dotenv==1.0.0
+# Добавьте сюда ваши зависимости с зафиксированными версиями
