@@ -1,19 +1,17 @@
 #!/usr/bin/env bash
 
 # Скрипт для запуска Termux Pastebin в продакшен-режиме с помощью Waitress
+# СОХРАНЯЕТ PID процесса waitress
 
-# Определяем директорию, где находится сам скрипт
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-# Определяем корневую директорию проекта (на уровень выше scripts)
 PROJECT_ROOT="$( dirname "$SCRIPT_DIR" )"
-
-# Переходим в корневую директорию проекта
 cd "$PROJECT_ROOT" || { echo "Ошибка: Не удалось перейти в $PROJECT_ROOT"; exit 1; }
 
-# --- Настройки ---
-VENV_DIR="venv" # Имя папки виртуального окружения
-ENV_FILE=".env" # Имя файла с переменными окружения
-APP_MODULE="src.app:app" # Путь к Flask приложению (папка.файл:объект)
+VENV_DIR="venv"
+ENV_FILE=".env"
+APP_MODULE="src.app:app"
+PID_FILE="data/pastebin.pid" # Файл для хранения PID процесса waitress
+LOG_FILE="pastebin-waitress.log" # Лог файл waitress
 
 # --- Проверка наличия venv ---
 if [ ! -d "$VENV_DIR" ]; then
@@ -22,41 +20,46 @@ if [ ! -d "$VENV_DIR" ]; then
     exit 1
 fi
 
+# --- Создаем папку data, если нет ---
+mkdir -p data
+
 # --- Активация venv ---
 echo "Активация виртуального окружения..."
 source "$VENV_DIR/bin/activate" || { echo "Ошибка: Не удалось активировать $VENV_DIR"; exit 1; }
-echo "Виртуальное окружение активировано."
 
-# --- Загрузка переменных окружения из .env файла ---
+# --- Загрузка .env ---
 if [ -f "$ENV_FILE" ]; then
     echo "Загрузка переменных окружения из $ENV_FILE..."
-    # Используем set -a для экспорта всех переменных, определенных в файле
-    # и grep -v '^#' для игнорирования комментариев
-    set -a
-    source "$ENV_FILE"
-    set +a
-    echo "Переменные окружения загружены."
+    set -a; source "$ENV_FILE"; set +a
 else
-    echo "Предупреждение: Файл $ENV_FILE не найден. Используются системные переменные окружения или значения по умолчанию."
+    echo "Предупреждение: Файл $ENV_FILE не найден."
 fi
 
-# --- Получаем настройки хоста и порта для Waitress ---
-# Используем значения из env или дефолтные, если не заданы
-HOST=${PASTEBIN_HOST:-"0.0.0.0"} # Дефолт 0.0.0.0
-PORT=${PASTEBIN_PORT:-"5005"}    # Дефолт 5005
+# --- Получаем хост и порт ---
+HOST=${PASTEBIN_HOST:-"0.0.0.0"}
+PORT=${PASTEBIN_PORT:-"5005"}
 
-# --- Проверка наличия waitress ---
+# --- Проверка waitress ---
 if ! command -v waitress-serve &> /dev/null; then
-    echo "Ошибка: Команда 'waitress-serve' не найдена."
-    echo "Убедитесь, что waitress установлен в виртуальном окружении: pip install waitress"
-    exit 1
+    echo "Ошибка: Команда 'waitress-serve' не найдена."; exit 1;
 fi
 
-# --- Запуск Waitress ---
+# --- Запуск Waitress в фоне и сохранение PID ---
 echo "Запуск Pastebin на http://${HOST}:${PORT} через Waitress..."
-# waitress-serve --host <host> --port <port> <путь_к_приложению>
-waitress-serve --host "$HOST" --port "$PORT" "$APP_MODULE"
+# Запускаем waitress, перенаправляем вывод и сохраняем PID (&! или $!)
+nohup waitress-serve --host "$HOST" --port "$PORT" "$APP_MODULE" >> "$LOG_FILE" 2>&1 &
+WAITRESS_PID=$! # Сохраняем PID последнего фонового процесса
 
-# Сюда выполнение дойдет только если waitress завершится (например, по Ctrl+C)
-echo "Waitress сервер остановлен."
-exit 0
+# Проверяем, запустился ли процесс (опционально, может быть неточно)
+sleep 1
+if ! ps -p $WAITRESS_PID > /dev/null; then
+     echo "Ошибка: Процесс waitress ($WAITRESS_PID) не запустился или завершился сразу."
+     exit 1
+fi
+
+# Записываем PID в файл
+echo $WAITRESS_PID > "$PID_FILE"
+echo "Waitress запущен с PID: $WAITRESS_PID. PID сохранен в $PID_FILE."
+echo "Логи пишутся в $LOG_FILE."
+
+exit 0 # Скрипт завершается, waitress работает в фоне
