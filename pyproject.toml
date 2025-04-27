@@ -18,17 +18,18 @@ shortuuid = ">=1.0"
 
 # --- Настройка Ruff ---
 [tool.ruff]
-# Выбираем правила для проверки (например, стандартные + flake8 + isort)
-# Полный список: https://docs.astral.sh/ruff/rules/
-select = ["E", "F", "W", "I", "UP", "N", "B", "C4", "SIM", "TCH"]
-ignore = ["E501"] # Игнорируем проверку длины строки (Black сам форматирует)
-
 # Указываем целевую версию Python
 target-version = "py310" # Соответствует твоей версии Python
 
 # Настраиваем пути, которые нужно проверять
 # Исключаем виртуальное окружение
 extend-exclude = ["venv", ".venv"]
+
+[tool.ruff.lint]
+# Выбираем правила для проверки (например, стандартные + flake8 + isort)
+# Полный список: https://docs.astral.sh/ruff/rules/
+select = ["E", "F", "W", "I", "UP", "N", "B", "C4", "SIM", "TCH"]
+ignore = ["E501"]
 
 # --- Настройка Mypy ---
 [tool.mypy]

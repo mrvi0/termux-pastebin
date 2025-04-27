@@ -19,6 +19,7 @@ DATA_DIR = SRC_DIR.parent / "data"
 # Полный путь к файлу базы данных
 DB_PATH = DATA_DIR / "pastes.db"
 
+
 # --- Инициализация Базы Данных ---
 def init_db():
     """
@@ -33,7 +34,7 @@ def init_db():
         cursor = conn.cursor()
         logger.info(f"Проверка/создание таблицы 'pastes' в БД: {DB_PATH}")
         # Создаем таблицу, если ее нет
-        cursor.execute('''
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS pastes (
                 key TEXT PRIMARY KEY,    -- Уникальный короткий ключ (текстовый)
                 content TEXT NOT NULL,   -- Содержимое пасты
@@ -42,21 +43,25 @@ def init_db():
                 language TEXT,           -- Язык для подсветки синтаксиса
                 expires_at TIMESTAMP     -- Время автоматического удаления
             )
-        ''')
+        """)
         # Создаем индекс для ускорения поиска по ключу (хотя PRIMARY KEY уже индексируется)
-        cursor.execute('''
+        cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_pastes_key ON pastes (key);
-        ''')
-        conn.commit() # Сохраняем изменения
-        conn.close() # Закрываем соединение
+        """)
+        conn.commit()  # Сохраняем изменения
+        conn.close()  # Закрываем соединение
         logger.info("Инициализация базы данных успешно завершена.")
     except sqlite3.Error as e:
         # Логируем критическую ошибку, если не удалось создать/открыть БД
-        logger.critical(f"Критическая ошибка при инициализации БД '{DB_PATH}': {e}", exc_info=True)
+        logger.critical(
+            f"Критическая ошибка при инициализации БД '{DB_PATH}': {e}", exc_info=True
+        )
         # Возможно, стоит прервать выполнение приложения здесь
-        raise # Перевыбрасываем исключение, чтобы приложение не запустилось
+        raise  # Перевыбрасываем исключение, чтобы приложение не запустилось
+
 
 # --- Функции для Работы с Пастами ---
+
 
 def add_paste(content: str, language: str | None = None) -> str | None:
     """
@@ -71,14 +76,16 @@ def add_paste(content: str, language: str | None = None) -> str | None:
     """
     if not isinstance(content, str) or not content.strip():
         logger.warning("Попытка добавить пустую пасту.")
-        return None # Не добавляем пустые пасты
+        return None  # Не добавляем пустые пасты
 
     # Генерируем уникальный короткий ключ
     # Используем алфавит без похожих символов для лучшей читаемости
-    su = shortuuid.ShortUUID(alphabet="23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz")
-    paste_key = su.random(length=8) # Длина ключа (можно настроить)
+    su = shortuuid.ShortUUID(
+        alphabet="23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz"
+    )
+    paste_key = su.random(length=8)  # Длина ключа (можно настроить)
 
-    conn = None # Инициализируем переменную соединения
+    conn = None  # Инициализируем переменную соединения
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
@@ -86,9 +93,9 @@ def add_paste(content: str, language: str | None = None) -> str | None:
         # Вставляем новую запись
         cursor.execute(
             "INSERT INTO pastes (key, content, language) VALUES (?, ?, ?)",
-            (paste_key, content, language)
+            (paste_key, content, language),
         )
-        conn.commit() # Сохраняем
+        conn.commit()  # Сохраняем
         logger.info(f"Паста успешно добавлена с ключом: {paste_key}")
         return paste_key
     except sqlite3.IntegrityError:
@@ -133,15 +140,14 @@ def get_paste(paste_key: str) -> tuple[str, str | None] | None:
         logger.debug(f"Поиск пасты с ключом: {paste_key}")
         # Выбираем нужные поля по ключу
         cursor.execute(
-            "SELECT content, language FROM pastes WHERE key = ?",
-            (paste_key,)
+            "SELECT content, language FROM pastes WHERE key = ?", (paste_key,)
         )
-        row = cursor.fetchone() # Получаем одну строку (или None)
+        row = cursor.fetchone()  # Получаем одну строку (или None)
 
         if row:
             logger.info(f"Паста с ключом '{paste_key}' найдена.")
             # Возвращаем кортеж с содержимым и языком
-            return row['content'], row['language']
+            return row["content"], row["language"]
         else:
             logger.warning(f"Паста с ключом '{paste_key}' не найдена в БД.")
             return None
@@ -151,7 +157,10 @@ def get_paste(paste_key: str) -> tuple[str, str | None] | None:
     finally:
         if conn:
             conn.close()
-            logger.debug(f"Соединение с БД закрыто после получения пасты '{paste_key}'.")
+            logger.debug(
+                f"Соединение с БД закрыто после получения пасты '{paste_key}'."
+            )
+
 
 # --- Можно добавить функции для удаления старых паст по расписанию в будущем ---
 
