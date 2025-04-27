@@ -1,19 +1,19 @@
 {% extends "base.html" %}
 {% block title %}Создать новую пасту{% endblock %}
 {% block content %}
-    <h2>Новая паста {% if user_display_name %}от {{ user_display_name }}{% endif %}</h2>
+    <h2 class="nunito-semibold">Новая паста {% if user_display_name %}от {{ user_display_name }}{% endif %}</h2>
     <form method="post">
         <textarea name="content" placeholder="Вставьте ваш текст или код сюда..." required autofocus></textarea>
         <br>
-        {# Чекбокс для публичности #}
-        <div>
-            <input type="checkbox" id="is_public" name="is_public" value="yes" checked>
-            <label for="is_public">Сделать пасту публичной (доступной по ссылке для всех)</label>
-        </div>
+        
         {# Сюда можно добавить выбор языка, если нужна подсветка #}
-        {#
-        <div>
-            <label for="language">Язык (для подсветки):</label>
+        <div class="filter filter_title nunito-regular">
+            <span class="label title-label"><label for="title">Заголовок (необязательно):</span></label>
+            <input type="text" name="title" id="title" placeholder="">
+        </div>
+        <div class="filter filter_language nunito-regular">
+            <span class="label language-label"><label for="language">Язык (для подсветки):</label></span>
+            
             <select name="language" id="language">
                 <option value="">Plain Text</option>
                 <option value="python">Python</option>
@@ -24,9 +24,27 @@
                 <option value="diff">Diff</option>
             </select>
         </div>
+        <div class="filter filter_expire_time nunito-regular">
+            <span class="label expire_time-label"><label for="expire_time">Время жизни пасты:</span></label>
+            <select name="expire_time" id="expire_time">
+                <option value="1h">1 час</option>
+                <option value="1d">1 день</option>
+                <option value="1w">1 неделя</option>
+                <option value="1m">1 месяц</option>
+                <option value="never">Никогда (постоянно)</option>
+            </select>
+        </div>
+        <div class="filter filter_is_public nunito-regular">
+            <span class="label is_public-label"><label for="is_public">Публичная паста:</span></label>
+            <select name="is_public" id="is_public">
+                <option value="yes" selected>Да</option>
+                <option value="no">Нет</option>
+            {# По умолчанию паста публичная #}
+            </select>
+        </div>
         <br>
-        #}
-        <br>
-        <button type="submit">Создать пасту</button>
+        <div class="form-actions">
+            <button type="submit">Создать пасту</button>
+        </div>
     </form>
 {% endblock %}
