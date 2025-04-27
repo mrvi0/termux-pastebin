@@ -3,7 +3,7 @@ import logging
 import logging.handlers  # Для настройки логгера
 import os
 from pathlib import Path
-from werkzeug.middleware.proxy_fix import ProxyFix
+
 from authlib.integrations.flask_client import OAuth
 from flask import (
     Flask,
@@ -33,7 +33,7 @@ app = Flask(__name__, template_folder=str(templates_dir), static_folder=str(stat
 # x_for=1: доверять одному прокси (твоему Nginx)
 # x_proto=1: доверять заголовку X-Forwarded-Proto
 # x_host=1: доверять заголовку X-Forwarded-Host
-app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
+# app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 # --- Конец добавления Middleware ---
 
 # --- Конфигурация Flask ---
@@ -140,9 +140,8 @@ def login_yandex():
     # Формируем URL, на который Яндекс должен вернуть пользователя ПОСЛЕ авторизации
     # Важно, чтобы этот URL был ДОБАВЛЕН в Redirect URI в настройках приложения Яндекс.OAuth!
     # Используем _external=True для получения полного URL
-    redirect_uri = url_for("authorize_yandex", _external=True)
+    redirect_uri = url_for("authorize_yandex", _external=True, _scheme="https")
     logger.info(f"Запрос авторизации Яндекс. Redirect URI: {redirect_uri}")
-    # Перенаправляем пользователя на страницу авторизации Яндекса
     return oauth.yandex.authorize_redirect(redirect_uri)
 
 
