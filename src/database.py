@@ -4,7 +4,7 @@ import datetime
 import logging
 import sqlite3
 from pathlib import Path
-from typing import Any, List, Optional, Tuple
+from typing import Any
 
 import shortuuid  # Для генерации коротких ключей
 
@@ -412,7 +412,7 @@ def delete_paste(paste_key: str, user_id: int | None) -> bool:
     if not isinstance(paste_key, str) or not paste_key:
         return False  # Невалидный ключ
 
-    conn: Optional[sqlite3.Connection] = None
+    conn: sqlite3.Connection | None = None
     try:
         conn = sqlite3.connect(DB_PATH)
         if conn is None:
@@ -456,7 +456,7 @@ def delete_paste(paste_key: str, user_id: int | None) -> bool:
                 conn.close()
 
 
-def delete_pastes(paste_keys: List[str], user_id: int) -> Tuple[int, int]:
+def delete_pastes(paste_keys: list[str], user_id: int) -> tuple[int, int]:
     """
     Удаляет несколько паст по списку ключей, принадлежащих указанному пользователю.
     Возвращает кортеж: (количество_успешно_удаленных, общее_количество_запрошенных).
@@ -464,7 +464,7 @@ def delete_pastes(paste_keys: List[str], user_id: int) -> Tuple[int, int]:
     if not paste_keys or not user_id:
         return 0, 0
 
-    conn: Optional[sqlite3.Connection] = None
+    conn: sqlite3.Connection | None = None
     deleted_count = 0
     total_requested = len(paste_keys)
 

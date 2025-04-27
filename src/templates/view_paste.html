@@ -31,12 +31,12 @@
 
     {# --- Кнопка Удаления (только для автора) --- #}
     {# Проверяем, что пользователь авторизован И является автором #}
-    {% if session.user_id and session.user_id == author_user_id %}
+    {% if author_user_id and session.user_id and author_user_id == session.user_id %}
     <hr style="border-color: #45475a;">
     <form action="{{ url_for('delete_single_paste', paste_key=paste_key) }}" method="post" style="display: inline; margin-right: 1em;">
-         <button type="submit" class="delete-button" onclick="return confirm('Вы уверены, что хотите удалить эту пасту?');">
-             🗑️ Удалить эту пасту
-         </button>
+          <button type="submit" class="delete-button" onclick="return confirm('Вы уверены, что хотите удалить эту пасту?');">
+              🗑️ Удалить эту пасту
+          </button>
     </form>
     {% endif %}
     <hr style="border-color: #45475a;">

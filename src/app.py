@@ -7,13 +7,13 @@ from pathlib import Path
 from authlib.integrations.flask_client import OAuth
 from flask import (
     Flask,
+    abort,
     flash,
     redirect,
     render_template,
     request,
     session,
     url_for,
-    abort,
 )
 from werkzeug.exceptions import HTTPException  # Для перехвата стандартных ошибок Flask
 
