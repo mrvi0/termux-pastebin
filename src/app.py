@@ -196,20 +196,20 @@ def authorize_yandex():
         return redirect(url_for("home"))
 
 
-@app.route("/logout", methods=['POST'])
+@app.route("/logout", methods=["POST"])
 def logout():
     """Очищает сессию пользователя и выходит из системы."""
     # Проверяем, действительно ли был POST запрос (Flask делает это сам, но для ясности)
-    if request.method == 'POST':
-        session.pop('user_id', None)
-        session.pop('display_name', None)
-        flash('Вы успешно вышли из системы.', 'info')
+    if request.method == "POST":
+        session.pop("user_id", None)
+        session.pop("display_name", None)
+        flash("Вы успешно вышли из системы.", "info")
         logger.info("Пользователь вышел из системы (POST /logout).")
         # Перенаправляем на главную или страницу входа
-        return redirect(url_for('login')) # Лучше на login после выхода
+        return redirect(url_for("login"))  # Лучше на login после выхода
     else:
         # Если кто-то попытается зайти на /logout через GET, можно просто редиректнуть
-        return redirect(url_for('home'))
+        return redirect(url_for("home"))
 
 
 # --- Роуты Приложения ---
