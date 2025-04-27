@@ -21,6 +21,29 @@ DATA_DIR = SRC_DIR / "data"
 # Полный путь к файлу базы данных
 DB_PATH = DATA_DIR / "pastes.db"
 
+# --- Конвертер для TIMESTAMP ---
+# SQLite может хранить timestamp как строки ISO 8601 или Unix timestamp.
+# Этот конвертер пытается распознать строку ISO 8601.
+def adapt_datetime_iso(val):
+    """Adapts datetime.datetime to timezone-naive ISO 8601 date."""
+    return val.isoformat(" ")
+
+def convert_timestamp(val):
+    """Converts an ISO 8601 datetime string to a datetime object."""
+    # val приходит как bytes, декодируем
+    try:
+        # Пытаемся распознать формат с микросекундами и без часового пояса
+        # (как обычно сохраняет CURRENT_TIMESTAMP в SQLite)
+        # Например: '2024-04-27 12:30:55.123456'
+        dt = datetime.datetime.fromisoformat(val.decode())
+        return dt
+    except (ValueError, TypeError):
+        logger.warning(f"Не удалось преобразовать значение timestamp '{val}' в datetime.")
+        return None # Возвращаем None в случае ошибки
+
+# Регистрируем адаптер и конвертер
+sqlite3.register_adapter(datetime.datetime, adapt_datetime_iso) # Пока не используем, но может пригодиться
+sqlite3.register_converter("timestamp", convert_timestamp) # Связываем тип TIMESTAMP с нашей функцией
 
 # --- Инициализация Базы Данных ---
 # --- Инициализация Базы Данных ---
@@ -186,26 +209,48 @@ def get_paste(paste_key: str) -> tuple[str, str | None, int | None] | None:
 
 
 def get_user_pastes(user_id: int, limit: int = 50) -> list[dict[str, Any]]:
-    # ... (код функции без изменений, использует DB_PATH) ...
+    """Получает последние N паст пользователя, преобразуя created_at в datetime."""
     if not user_id:
         return []
     conn = None
     pastes = []
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = sqlite3.connect(DB_PATH, detect_types=sqlite3.PARSE_DECLTYPES)
+        if conn is None: return []
         conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
+        cursor: Any = conn.cursor()
+        logger.debug(f"Получение паст для user_id={user_id} (limit={limit})")
         cursor.execute(
+            # Убедимся, что created_at имеет тип TIMESTAMP при создании таблицы
             "SELECT key, content, created_at, language FROM pastes WHERE user_id = ? ORDER BY created_at DESC LIMIT ?",
-            (user_id, limit),
+            (user_id, limit)
         )
         rows = cursor.fetchall()
-        for row in rows:
-            pastes.append(dict(row))
+        for row_raw in rows:
+             # Преобразуем sqlite3.Row в словарь
+             paste_dict = dict(row_raw)
+             # created_at должен быть уже преобразован конвертером,
+             # но на всякий случай проверим и преобразуем, если это строка
+             created_at_val = paste_dict.get('created_at')
+             if isinstance(created_at_val, str):
+                 converted_dt = convert_timestamp(created_at_val.encode()) # Пытаемся конвертировать строку
+                 if converted_dt:
+                     paste_dict['created_at'] = converted_dt
+                 else:
+                      logger.warning(f"Повторная попытка конвертации created_at не удалась для {created_at_val}")
+                      # Оставляем как есть или ставим None
+                      # paste_dict['created_at'] = None
+             elif not isinstance(created_at_val, datetime.datetime):
+                 logger.warning(f"Неожиданный тип для created_at: {type(created_at_val)}")
+                 # Можно оставить как есть или None
+                 # paste_dict['created_at'] = None
+
+             pastes.append(paste_dict)
         return pastes
     except sqlite3.Error as e:
         logger.error(f"Ошибка получения паст для user_id={user_id}: {e}", exc_info=True)
         return []
     finally:
         if conn:
-            conn.close()
+            try: conn.close()
+            except Exception: pass
