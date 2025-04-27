@@ -25,19 +25,8 @@ jobs:
         run: |
           mkdir -p ~/.ssh && chmod 700 ~/.ssh
           H1_HOST=${{ secrets.H1_WG_HOST }}
-          echo "Scanning host ${H1_HOST} on port 8022 (IPv4, 30s timeout)..."
-          # Добавляем -4 (использовать только IPv4) и -T 30 (таймаут 30 секунд)
-          ssh-keyscan -p 8022 -v -4 -T 30 "$H1_HOST" >> ~/.ssh/known_hosts
-          # Если ключ успешно добавлен, файл не будет пустым
-          if [ -s ~/.ssh/known_hosts ]; then
-            echo "Host key added successfully."
-          else
-            echo "ERROR: Failed to retrieve host key from ${H1_HOST}."
-            # Попробуем пингануть хост для диагностики сети
-            echo "Pinging ${H1_HOST}..."
-            ping -c 3 "$H1_HOST"
-            exit 1
-          fi
+          echo "Scanning host ${H1_HOST} on port 8022..."
+          ssh-keyscan -p 8022 -v "$H1_HOST" >> ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
         shell: bash
 
