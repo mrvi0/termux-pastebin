@@ -231,7 +231,7 @@ def create_paste():
     user_id = session.get("user_id")
     user_log_id = user_id if user_id else request.remote_addr  # Для логов
 
-    logger.info(f"Попытка создания пасты от '{user_log_id}'")
+    logger.info(f"Попытка создания пасты от '{user_log_id}'. is_public={is_public_from_form}")
 
     if not content or not content.strip():
         flash("Содержимое пасты не может быть пустым!", "danger")
@@ -248,9 +248,7 @@ def create_paste():
         logger.warning(f"Попытка создания слишком большой пасты от '{user_log_id}'.")
         return redirect(url_for("home"))
 
-    paste_key = database.add_paste(
-        content, user_id=user_id, language=language, is_public=is_public_from_form
-    )
+    paste_key = database.add_paste(content, user_id=user_id, language=language, is_public=is_public_from_form)
 
     if paste_key:
         paste_url = url_for("view_paste", paste_key=paste_key, _external=True)
