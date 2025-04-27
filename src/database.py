@@ -309,8 +309,13 @@ def get_paste(paste_key: str) -> tuple[str, str | None, int | None, bool] | None
                 conn.close()
 
 
-def get_user_pastes(user_id: int, limit: int = 50) -> list[dict[str, Any]]:
-    """Получает последние N паст пользователя, включая статус публичности."""
+def get_user_pastes(
+    user_id: int, limit: int = 50, preview_len: int = 100
+) -> list[dict[str, Any]]:
+    """
+    Получает последние N паст пользователя.
+    Для приватных паст ДЕШИФРУЕТ начало контента для превью.
+    """
     if not user_id:
         return []
     conn: sqlite3.Connection | None = None
@@ -322,7 +327,8 @@ def get_user_pastes(user_id: int, limit: int = 50) -> list[dict[str, Any]]:
         conn.row_factory = sqlite3.Row
         cursor: Any = conn.cursor()
         logger.debug(f"Получение паст для user_id={user_id} (limit={limit})")
-        # --- ИЗМЕНЕНИЕ: Выбираем и is_public ---
+
+        # Выбираем все необходимые поля
         cursor.execute(
             """SELECT key, content, created_at, language, is_public
                FROM pastes
@@ -332,23 +338,58 @@ def get_user_pastes(user_id: int, limit: int = 50) -> list[dict[str, Any]]:
             (user_id, limit),
         )
         rows = cursor.fetchall()
+
         for row_raw in rows:
             paste_dict = dict(row_raw)
-            # Преобразуем is_public в bool
-            paste_dict["is_public"] = bool(
-                paste_dict.get("is_public", 1)
-            )  # По умолчанию считаем публичной
-            # Обрабатываем timestamp (как в прошлый раз)
+            is_public = bool(paste_dict.get("is_public", 1))
+            content_from_db = paste_dict["content"]
+            final_content_preview = (
+                "[Ошибка обработки контента]"  # Значение по умолчанию
+            )
+
+            # --- ОБРАБОТКА КОНТЕНТА ДЛЯ ПРЕВЬЮ ---
+            if is_public:
+                # Для публичных паст просто берем начало строки
+                if isinstance(content_from_db, str):
+                    final_content_preview = content_from_db[:preview_len]
+                elif isinstance(content_from_db, bytes):  # Если вдруг байты
+                    try:
+                        final_content_preview = content_from_db.decode(
+                            "utf-8", errors="ignore"
+                        )[:preview_len]
+                    except Exception:
+                        final_content_preview = "[Ошибка декодирования]"
+                else:
+                    final_content_preview = "[Неизвестный тип контента]"
+            else:
+                # Для приватных паст ДЕШИФРУЕМ
+                if isinstance(content_from_db, bytes):
+                    decrypted_content = security.decrypt_content(content_from_db)
+                    if decrypted_content is not None:
+                        # Берем начало дешифрованного текста
+                        final_content_preview = decrypted_content[:preview_len]
+                    else:
+                        final_content_preview = "[Ошибка дешифрования]"
+                else:
+                    # Приватная паста должна быть BLOB
+                    final_content_preview = "[Ошибка формата хранения]"
+            # --- КОНЕЦ ОБРАБОТКИ КОНТЕНТА ---
+
+            # Обновляем поле content в словаре на превью
+            paste_dict["content"] = final_content_preview
+            # Убедимся, что is_public - это bool
+            paste_dict["is_public"] = is_public
+            # Обрабатываем timestamp
             created_at_val = paste_dict.get("created_at")
             if isinstance(created_at_val, str):
                 converted_dt = convert_timestamp(created_at_val.encode())
-                if converted_dt:
-                    paste_dict["created_at"] = converted_dt
+                paste_dict["created_at"] = converted_dt
             elif not isinstance(created_at_val, datetime.datetime):
-                paste_dict["created_at"] = None  # Ставим None если тип неверный
+                paste_dict["created_at"] = None
 
             pastes.append(paste_dict)
-        logger.info(f"Найдено {len(pastes)} паст для user_id={user_id}.")
+
+        logger.info(f"Найдено и обработано {len(pastes)} паст для user_id={user_id}.")
         return pastes
     except sqlite3.Error as e:
         logger.error(f"Ошибка получения паст для user_id={user_id}: {e}", exc_info=True)

@@ -65,9 +65,12 @@ jobs:
               sleep 2
 
               echo "Updating code..."
+              git remote set-url origin git@github.com:${{ github.repository }}.git || echo "Origin already set or failed."
               git fetch origin
-              git reset --hard origin/main
-              echo "Code updated."
+              git checkout -f main || { echo "ERROR: Failed to checkout main branch"; exit 1; }
+              git reset --hard origin/main || { echo "ERROR: Failed to reset to origin/main"; exit 1; }
+              git clean -fdx -e .env -e data/ -e venv/ -e pastebin-*.log -e *.pyc -e __pycache__/ || echo "Git clean failed or nothing to clean."
+              echo "Code updated and cleaned."
 
               echo "Activating venv..."
               source "${DEPLOY_DIR}/venv/bin/activate" || { echo "ERROR: Failed to activate venv"; exit 1; }

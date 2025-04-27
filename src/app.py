@@ -231,7 +231,9 @@ def create_paste():
     user_id = session.get("user_id")
     user_log_id = user_id if user_id else request.remote_addr  # Для логов
 
-    logger.info(f"Попытка создания пасты от '{user_log_id}'")
+    logger.info(
+        f"Попытка создания пасты от '{user_log_id}'. is_public={is_public_from_form}"
+    )
 
     if not content or not content.strip():
         flash("Содержимое пасты не может быть пустым!", "danger")
