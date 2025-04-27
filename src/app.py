@@ -94,9 +94,9 @@ def create_paste():
         return redirect(url_for('home'))
 
     # Ограничение размера
-    MAX_PASTE_SIZE_BYTES = 1 * 1024 * 1024 # 1MB
-    if len(content.encode('utf-8', errors='ignore')) > MAX_PASTE_SIZE_BYTES:
-         flash(f"Ошибка: Максимальный размер пасты {MAX_PASTE_SIZE_BYTES // 1024 // 1024}MB.", "danger")
+    max_paste_size_bytes = 1 * 1024 * 1024 # 1MB
+    if len(content.encode('utf-8', errors='ignore')) > max_paste_size_bytes:
+         flash(f"Ошибка: Максимальный размер пасты {max_paste_size_bytes // 1024 // 1024}MB.", "danger")
          logger.warning(f"Попытка создания слишком большой пасты от '{user}'.")
          return redirect(url_for('home'))
 

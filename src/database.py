@@ -96,7 +96,8 @@ def add_paste(content: str, language: str | None = None) -> str | None:
         logger.warning(f"Коллизия ключа shortuuid '{paste_key}', генерирую новый...")
         # Рекурсивно вызываем функцию еще раз, чтобы сгенерировать другой ключ
         # Важно закрыть соединение перед рекурсивным вызовом, чтобы избежать блокировок
-        if conn: conn.close()
+        if conn:
+            conn.close()
         return add_paste(content, language)
     except sqlite3.Error as e:
         # Логируем другие ошибки базы данных
