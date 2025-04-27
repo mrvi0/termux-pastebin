@@ -53,9 +53,12 @@ def encrypt_content(content: str) -> bytes | None:
         # Возвращаем nonce + зашифрованные данные (nonce нужен для дешифровки)
         # Сохраняем их вместе как одну байтовую строку
         return nonce + ciphertext
-    except Exception:
-        logger.exception("Ошибка при шифровании контента.")
-        return None
+    except Exception as e:
+        # Логируем саму ошибку дешифровки!
+        logger.error(f"Ошибка при дешифровании контента: {e}", exc_info=True)
+    # logger.debug(f"Nonce: {nonce.hex() if nonce else None}") # Опционально для отладки
+    # logger.debug(f"Ciphertext (first 32 bytes): {ciphertext[:32].hex() if ciphertext else None}") # Опционально
+    return None  # В случае ошибки дешифровки возвращаем None
 
 
 def decrypt_content(encrypted_data: bytes) -> str | None:
