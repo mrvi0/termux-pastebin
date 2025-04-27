@@ -4,7 +4,7 @@ import datetime
 import logging
 import sqlite3
 from pathlib import Path
-from typing import Any
+from typing import Any, List, Optional, Tuple
 
 import shortuuid  # Для генерации коротких ключей
 
@@ -394,6 +394,110 @@ def get_user_pastes(
     except sqlite3.Error as e:
         logger.error(f"Ошибка получения паст для user_id={user_id}: {e}", exc_info=True)
         return []
+    finally:
+        if conn:
+            with contextlib.suppress(sqlite3.Error):
+                conn.close()
+
+
+# --- Функции Удаления Паст ---
+
+
+def delete_paste(paste_key: str, user_id: int | None) -> bool:
+    """
+    Удаляет пасту по ключу.
+    Если user_id предоставлен (не None), удаляет только если user_id совпадает с автором.
+    Возвращает True в случае успеха (даже если пасты не было), False при ошибке БД.
+    """
+    if not isinstance(paste_key, str) or not paste_key:
+        return False  # Невалидный ключ
+
+    conn: Optional[sqlite3.Connection] = None
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        if conn is None:
+            return False
+        cursor: Any = conn.cursor()
+
+        # Формируем запрос в зависимости от того, нужно ли проверять автора
+        if user_id is not None:
+            # Удаляем только если ключ совпадает ИЛИ user_id совпадает
+            # Важно: пользователь должен иметь право удалять только СВОИ пасты
+            cursor.execute(
+                "DELETE FROM pastes WHERE key = ? AND user_id = ?", (paste_key, user_id)
+            )
+            logger.info(
+                f"Попытка удаления пасты '{paste_key}' пользователем {user_id}."
+            )
+        else:
+            # Если user_id не указан (например, удаление админом или по истечению срока)
+            # В текущей логике это не используется, но можно предусмотреть
+            cursor.execute("DELETE FROM pastes WHERE key = ?", (paste_key,))
+            logger.info(f"Попытка удаления пасты '{paste_key}' (без проверки автора).")
+
+        deleted_rows = cursor.rowcount  # Сколько строк было затронуто
+        conn.commit()
+
+        if deleted_rows > 0:
+            logger.info(f"Паста '{paste_key}' успешно удалена.")
+        else:
+            # Паста либо не найдена, либо не принадлежит пользователю (если user_id был указан)
+            logger.warning(
+                f"Паста '{paste_key}' не найдена для удаления или не принадлежит пользователю {user_id}."
+            )
+        return True  # Возвращаем True, даже если ничего не удалено (операция выполнена)
+
+    except sqlite3.Error as e:
+        logger.error(f"Ошибка удаления пасты '{paste_key}' из БД: {e}", exc_info=True)
+        return False  # Ошибка БД
+    finally:
+        if conn:
+            with contextlib.suppress(sqlite3.Error):
+                conn.close()
+
+
+def delete_pastes(paste_keys: List[str], user_id: int) -> Tuple[int, int]:
+    """
+    Удаляет несколько паст по списку ключей, принадлежащих указанному пользователю.
+    Возвращает кортеж: (количество_успешно_удаленных, общее_количество_запрошенных).
+    """
+    if not paste_keys or not user_id:
+        return 0, 0
+
+    conn: Optional[sqlite3.Connection] = None
+    deleted_count = 0
+    total_requested = len(paste_keys)
+
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        if conn is None:
+            return 0, total_requested
+        cursor: Any = conn.cursor()
+
+        # Используем параметризованный запрос для безопасности
+        # Создаем плейсхолдеры '?' для списка ключей
+        placeholders = ",".join("?" * len(paste_keys))
+        sql = f"DELETE FROM pastes WHERE user_id = ? AND key IN ({placeholders})"
+
+        # Собираем параметры: user_id + все ключи
+        params = [user_id] + paste_keys
+
+        logger.info(
+            f"Попытка массового удаления {len(paste_keys)} паст для user_id={user_id}. Ключи: {paste_keys}"
+        )
+        cursor.execute(sql, params)
+        deleted_count = cursor.rowcount  # Узнаем, сколько строк реально удалено
+        conn.commit()
+        logger.info(
+            f"Массовое удаление: удалено {deleted_count} из {total_requested} запрошенных паст для user_id={user_id}."
+        )
+        return deleted_count, total_requested
+
+    except sqlite3.Error as e:
+        logger.error(
+            f"Ошибка массового удаления паст для user_id={user_id}: {e}", exc_info=True
+        )
+        return 0, total_requested  # Возвращаем 0 удаленных при ошибке
     finally:
         if conn:
             with contextlib.suppress(sqlite3.Error):
