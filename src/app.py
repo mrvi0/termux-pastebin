@@ -139,7 +139,7 @@ def view_paste(paste_key: str):
 
     result = database.get_paste(paste_key)
     if result:
-        content, language = result
+        content, language, user_id = result
         return render_template(
             "view_paste.html", paste_key=paste_key, content=content, language=language
         )

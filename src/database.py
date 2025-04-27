@@ -2,7 +2,6 @@
 import datetime
 import logging
 import sqlite3
-
 from pathlib import Path
 from typing import Any
 
@@ -140,7 +139,7 @@ def add_paste(
     conn = None
     try:
         conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
+        cursor: Any = conn.cursor()
         cursor.execute(
             "INSERT INTO pastes (key, content, language, user_id) VALUES (?, ?, ?, ?)",
             (paste_key, content, language, user_id),
