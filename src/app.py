@@ -282,8 +282,6 @@ def my_pastes():
     return render_template("my_pastes.html", pastes=user_pastes)
 
 
-
-
 @app.route("/<paste_key>")
 def view_paste(paste_key: str):
     """Отображает содержимое пасты по ее ключу."""
@@ -355,28 +353,32 @@ def view_paste(paste_key: str):
         ), 404
 
 
-@app.route('/delete/<paste_key>', methods=['POST'])
+@app.route("/delete/<paste_key>", methods=["POST"])
 def delete_single_paste(paste_key: str):
     """Обрабатывает удаление одной пасты со страницы просмотра."""
-    user_id = session.get('user_id')
-    logger.info(f"Попытка удаления пасты '{paste_key}' пользователем {user_id or 'Аноним'}")
+    user_id = session.get("user_id")
+    logger.info(
+        f"Попытка удаления пасты '{paste_key}' пользователем {user_id or 'Аноним'}"
+    )
 
     if not user_id:
         flash("Доступ запрещен: необходимо авторизоваться.", "danger")
-        abort(403) # Или редирект на логин
+        abort(403)  # Или редирект на логин
 
     # Сначала получаем пасту, чтобы убедиться, что она принадлежит пользователю
     # (хотя кнопка и так видна только автору, но лучше проверить на сервере)
     result = database.get_paste(paste_key)
     if not result:
-        abort(404) # Паста не найдена
+        abort(404)  # Паста не найдена
 
     _content, _language, author_user_id, _is_public = result
 
     if author_user_id != user_id:
-        logger.warning(f"Попытка удаления чужой пасты! User={user_id}, PasteKey={paste_key}, Author={author_user_id}")
+        logger.warning(
+            f"Попытка удаления чужой пасты! User={user_id}, PasteKey={paste_key}, Author={author_user_id}"
+        )
         flash("Ошибка: Вы можете удалять только свои пасты.", "danger")
-        abort(403) # Доступ запрещен
+        abort(403)  # Доступ запрещен
 
     # Если все проверки пройдены, удаляем пасту
     success = database.delete_paste(paste_key, user_id)
@@ -384,43 +386,51 @@ def delete_single_paste(paste_key: str):
     if success:
         flash(f"Паста '{paste_key}' успешно удалена.", "success")
         # Перенаправляем на страницу "Мои пасты" после удаления
-        return redirect(url_for('my_pastes'))
+        return redirect(url_for("my_pastes"))
     else:
         flash(f"Не удалось удалить пасту '{paste_key}'. Ошибка базы данных.", "danger")
         # Возвращаем на страницу просмотра пасты, если удаление не удалось
-        return redirect(url_for('view_paste', paste_key=paste_key))
+        return redirect(url_for("view_paste", paste_key=paste_key))
 
 
-@app.route('/delete-selected', methods=['POST'])
+@app.route("/delete-selected", methods=["POST"])
 def delete_selected_pastes():
     """Обрабатывает удаление выбранных паст со страницы 'Мои пасты'."""
-    user_id = session.get('user_id')
+    user_id = session.get("user_id")
     if not user_id:
         flash("Доступ запрещен: необходимо авторизоваться.", "danger")
-        return redirect(url_for('login')) # Редирект на логин
+        return redirect(url_for("login"))  # Редирект на логин
 
     # Получаем список ключей паст из формы (чекбоксы с name="paste_keys")
-    keys_to_delete = request.form.getlist('paste_keys')
-    logger.info(f"Запрос на массовое удаление паст от user_id={user_id}. Ключи: {keys_to_delete}")
+    keys_to_delete = request.form.getlist("paste_keys")
+    logger.info(
+        f"Запрос на массовое удаление паст от user_id={user_id}. Ключи: {keys_to_delete}"
+    )
 
     if not keys_to_delete:
         flash("Вы не выбрали ни одной пасты для удаления.", "warning")
-        return redirect(url_for('my_pastes'))
+        return redirect(url_for("my_pastes"))
 
     # Удаляем пасты, принадлежащие ЭТОМУ пользователю
     deleted_count, requested_count = database.delete_pastes(keys_to_delete, user_id)
 
     if deleted_count > 0:
-        flash(f"Успешно удалено {deleted_count} из {requested_count} выбранных паст.", "success")
+        flash(
+            f"Успешно удалено {deleted_count} из {requested_count} выбранных паст.",
+            "success",
+        )
     elif requested_count > 0:
         # Если запрошенные были, но ничего не удалено (ошибка БД или чужие пасты)
-        flash("Не удалось удалить выбранные пасты. Возможно, они уже удалены или произошла ошибка.", "warning")
+        flash(
+            "Не удалось удалить выбранные пасты. Возможно, они уже удалены или произошла ошибка.",
+            "warning",
+        )
     else:
         # Сюда не должны попасть, т.к. есть проверка на keys_to_delete выше
-         flash("Произошла странная ошибка при удалении.", "danger")
+        flash("Произошла странная ошибка при удалении.", "danger")
 
+    return redirect(url_for("my_pastes"))  # Возвращаемся на страницу "Мои пасты"
 
-    return redirect(url_for('my_pastes')) # Возвращаемся на страницу "Мои пасты"
 
 @app.errorhandler(Exception)
 def handle_exception(e: Exception):
