@@ -5,32 +5,20 @@ import logging.handlers # Для настройки логгера
 from pathlib import Path
 from flask import (
     Flask, request, redirect, url_for, render_template,
-    abort, flash, Response # Добавляем Response для Basic Auth
+    abort, flash
 )
-from flask_basicauth import BasicAuth # Импортируем расширение BasicAuth
+
 from werkzeug.exceptions import HTTPException # Для перехвата стандартных ошибок Flask
 
 # --- Импортируем наш модуль БД и инициализируем её ---
 from . import database # Относительный импорт
 
 # --- ДОБАВИМ ОТЛАДКУ ПУТЕЙ ---
-print("--- Debugging Paths ---")
 current_file_path = Path(__file__).resolve()
-print(f"Current file (__file__): {current_file_path}")
 src_dir = current_file_path.parent
-print(f"Source directory (src_dir): {src_dir}")
 project_root = src_dir.parent
-print(f"Project root (project_root): {project_root}")
 templates_dir = src_dir / "templates"
-print(f"Templates directory (templates_dir): {templates_dir}")
 static_dir = src_dir / "static"
-print(f"Static directory (static_dir): {static_dir}")
-print(f"Templates directory exists? {templates_dir.exists()}")
-print(f"Templates directory is dir? {templates_dir.is_dir()}")
-print(f"Home template exists? {(templates_dir / 'home.html').exists()}")
-print(f"View template exists? {(templates_dir / 'view_paste.html').exists()}")
-print("--- End Debugging Paths ---")
-# --- КОНЕЦ ОТЛАДКИ ПУТЕЙ ---
 
 # --- Настройка Приложения Flask ---
 app = Flask(__name__,
@@ -61,15 +49,15 @@ stream_handler.setLevel(log_level)
 logging.getLogger().addHandler(stream_handler) # Или добавляем к корневому логгеру
 
 # Опционально: Обработчик в файл (если нужен отдельный лог для веб-запросов)
-# log_file = Path(__file__).parent.parent / "logs" / "pastebin_app.log"
-# log_file.parent.mkdir(exist_ok=True)
-# file_handler = logging.handlers.RotatingFileHandler(
-#     log_file, maxBytes=2*1024*1024, backupCount=2, encoding='utf-8'
-# )
-# file_handler.setFormatter(log_formatter)
-# file_handler.setLevel(logging.DEBUG)
-# app.logger.addHandler(file_handler)
-# logging.getLogger().addHandler(file_handler) # Добавляем к корневому
+log_file = Path(__file__).parent.parent / "logs" / "pastebin_app.log"
+log_file.parent.mkdir(exist_ok=True)
+file_handler = logging.handlers.RotatingFileHandler(
+    log_file, maxBytes=2*1024*1024, backupCount=2, encoding='utf-8'
+)
+file_handler.setFormatter(log_formatter)
+file_handler.setLevel(logging.DEBUG)
+app.logger.addHandler(file_handler)
+logging.getLogger().addHandler(file_handler) # Добавляем к корневому
 
 # Устанавливаем уровень для логгера Flask
 app.logger.setLevel(log_level)
@@ -86,36 +74,18 @@ except Exception as e:
     # Приложение, скорее всего, не сможет работать, но Flask продолжит запуск.
     # Можно добавить sys.exit(1) здесь, если нужно жестко остановить.
 
-# --- Настройка Basic Auth ---
-# Читаем логин/пароль из переменных окружения
-app.config['BASIC_AUTH_USERNAME'] = os.environ.get('BASIC_AUTH_USERNAME', 'user')
-app.config['BASIC_AUTH_PASSWORD'] = os.environ.get('BASIC_AUTH_PASSWORD', 'changeme')
-# Включаем Basic Auth для всего приложения ПО УМОЛЧАНИЮ
-# app.config['BASIC_AUTH_FORCE'] = True # <-- Это защитит ВСЕ роуты, включая просмотр паст! Нам это не нужно.
-
-# Инициализируем расширение BasicAuth
-basic_auth = BasicAuth(app)
-
-# --- Декоратор для защиты конкретных роутов ---
-# Мы будем использовать @basic_auth.required для защиты нужных нам функций
-# Это удобнее, чем BASIC_AUTH_FORCE = True
-
 # --- Роуты Приложения ---
 
 @app.route('/', methods=['GET'])
-@basic_auth.required # <-- Защищаем главную страницу Basic Auth
+
 def home():
     """Отображает главную страницу с формой для создания пасты."""
     logger.info(f"Запрос главной страницы от {request.remote_addr}")
-    # Передаем имя пользователя (если Basic Auth успешно пройдена)
-    username = request.authorization.username if request.authorization else "Аноним"
     return render_template('home.html', username=username)
 
 @app.route('/', methods=['POST'])
-@basic_auth.required # <-- Защищаем создание пасты Basic Auth
 def create_paste():
     """Принимает данные из формы и создает новую пасту."""
-    user = request.authorization.username if request.authorization else "Аноним"
     logger.info(f"Попытка создания пасты от пользователя '{user}' ({request.remote_addr})")
     content = request.form.get('content')
     language = request.form.get('language') # Пока не используется
@@ -147,7 +117,7 @@ def create_paste():
         return redirect(url_for('home'))
 
 @app.route('/<paste_key>')
-# НЕ ИСПОЛЬЗУЕМ @basic_auth.required здесь, чтобы ссылки были публичными
+
 def view_paste(paste_key: str):
     """Отображает содержимое пасты по ее ключу."""
     logger.info(f"Запрос просмотра пасты '{paste_key}' от {request.remote_addr}")
@@ -176,17 +146,6 @@ def page_not_found(e: HTTPException):
     logger.warning(f"Запрос к несуществующей странице: {request.url} (от {request.remote_addr})")
     # Можно отрендерить кастомный шаблон 404.html или просто текст
     return render_template('view_paste.html', paste_key='404 Не найдено', content=None), 404
-
-@app.errorhandler(401)
-def unauthorized(e: HTTPException):
-    """Обработчик для ошибки 401 (Не авторизован) от BasicAuth."""
-    logger.warning(f"Неудачная попытка Basic Auth к {request.path} от {request.remote_addr}")
-    # BasicAuth само отправляет заголовок WWW-Authenticate, нам не нужно ничего делать
-    # Flask-BasicAuth вернет стандартный ответ 401 Unauthorized
-    # Можно вернуть кастомный ответ, если нужно:
-    # return Response('Требуется авторизация.', 401, {'WWW-Authenticate': 'Basic realm="Login Required"'})
-    # Но обычно стандартного ответа достаточно
-    return e # Передаем оригинальный ответ от Flask-BasicAuth
 
 @app.errorhandler(Exception)
 def handle_exception(e: Exception):
