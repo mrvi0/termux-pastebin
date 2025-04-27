@@ -25,55 +25,8 @@ project_root = src_dir.parent
 templates_dir = src_dir / "templates"
 static_dir = src_dir / "static"
 
-LOG_DIR = project_root / "logs"
-LOG_DIR.mkdir(parents=True, exist_ok=True) # Создаем папку logs
-
-# --- НАСТРОЙКА КОРНЕВОГО ЛОГГЕРА ---
-log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-log_level = logging.DEBUG # <-- Устанавливаем DEBUG для подробного логирования
-
-# Получаем корневой логгер
-root_logger = logging.getLogger()
-root_logger.setLevel(log_level) # Устанавливаем уровень на корневом
-
-# Убираем ВСЕ существующие обработчики с корневого логгера
-# Это важно, чтобы избежать дублирования от Flask или Waitress
-for handler in root_logger.handlers[:]:
-    root_logger.removeHandler(handler)
-
-# 1. Обработчик для вывода в консоль (stdout/stderr)
-# Этот вывод будет перенаправлен в pastebin-waitress.log скриптом запуска
-console_handler = logging.StreamHandler()
-console_handler.setFormatter(log_formatter)
-console_handler.setLevel(log_level) # Используем общий уровень
-root_logger.addHandler(console_handler)
-
-# 2. Обработчик для записи в отдельный ротируемый файл
-log_file_path = LOG_DIR / "pastebin_app.log"
-try:
-    file_handler = logging.handlers.RotatingFileHandler(
-        log_file_path,
-        maxBytes=2 * 1024 * 1024, # 2MB
-        backupCount=3,           # Хранить 3 старых файла
-        encoding='utf-8'
-    )
-    file_handler.setFormatter(log_formatter)
-    file_handler.setLevel(log_level) # Используем общий уровень
-    root_logger.addHandler(file_handler)
-    root_logger.info(f"Логирование также настроено в файл: {log_file_path}")
-except Exception as e:
-    root_logger.error(f"Не удалось настроить файловый логгер для {log_file_path}: {e}", exc_info=True)
-
-# Уменьшаем шум от сторонних библиотек (если нужно)
-logging.getLogger('waitress').setLevel(logging.WARNING)
-# logging.getLogger('werkzeug').setLevel(logging.WARNING) # Логи Werkzeug (Flask)
-
 # --- Настройка Приложения Flask ---
 app = Flask(__name__, template_folder=str(templates_dir), static_folder=str(static_dir))
-
-app.logger.disabled = True
-# Получаем наш настроенный логгер для использования в этом файле
-logger = logging.getLogger(__name__) # Получаем логгер с именем 'src.app'
 
 # --- Добавить Middleware ProxyFix ---
 # x_for=1: доверять одному прокси (твоему Nginx)
@@ -92,6 +45,40 @@ if not app.config["SECRET_KEY"]:
     app.config["SECRET_KEY"] = (
         "default-insecure-key"  # Устанавливаем небезопасный ключ по умолчанию
     )
+
+# --- Настройка Логирования Flask ---
+# Убираем стандартные обработчики Flask, если они есть
+# for handler in app.logger.handlers[:]: app.logger.removeHandler(handler) # Будь осторожен с этим
+
+# Настраиваем наш логгер (можно использовать тот же формат, что и для database)
+log_formatter = logging.Formatter(
+    "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+log_level = logging.INFO  # Уровень логгирования для Flask (можно INFO или DEBUG)
+
+# Обработчик в консоль
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(log_formatter)
+stream_handler.setLevel(log_level)
+# app.logger.addHandler(stream_handler) # Добавляем к логгеру Flask
+logging.getLogger().addHandler(stream_handler)  # Или добавляем к корневому логгеру
+
+# Опционально: Обработчик в файл (если нужен отдельный лог для веб-запросов)
+log_file = Path(__file__).parent.parent / "logs" / "pastebin_app.log"
+log_file.parent.mkdir(exist_ok=True)
+file_handler = logging.handlers.RotatingFileHandler(
+    log_file, maxBytes=2 * 1024 * 1024, backupCount=2, encoding="utf-8"
+)
+file_handler.setFormatter(log_formatter)
+file_handler.setLevel(logging.DEBUG)
+app.logger.addHandler(file_handler)
+logging.getLogger().addHandler(file_handler)  # Добавляем к корневому
+
+# Устанавливаем уровень для логгера Flask
+app.logger.setLevel(log_level)
+logging.getLogger().setLevel(log_level)  # Устанавливаем уровень для корневого логгера
+logging.getLogger("waitress").setLevel(logging.WARNING)  # Уменьшаем шум от waitress
+logger = app.logger  # Используем логгер Flask для сообщений из этого файла
 
 # --- Инициализация Базы Данных ---
 # Вызываем функцию инициализации из модуля database при старте приложения
