@@ -363,7 +363,9 @@ def get_user_pastes(
                     final_content_preview = "[Неизвестный тип контента]"
             else:
                 # Для приватных паст ДЕШИФРУЕМ
-                logger.info(f"Обработка приватной пасты {paste_dict['key']}. Тип content_from_db: {type(content_from_db)}")
+                logger.info(
+                    f"Обработка приватной пасты {paste_dict['key']}. Тип content_from_db: {type(content_from_db)}"
+                )
                 if isinstance(content_from_db, bytes):
                     decrypted_content = security.decrypt_content(content_from_db)
                     if decrypted_content is not None:
