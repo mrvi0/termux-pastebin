@@ -4,9 +4,18 @@ import logging.handlers  # Для настройки логгера
 import os
 from pathlib import Path
 
-from flask import Flask, abort, flash, redirect, render_template, request, url_for, session
-from werkzeug.exceptions import HTTPException  # Для перехвата стандартных ошибок Flask
 from authlib.integrations.flask_client import OAuth
+from flask import (
+    Flask,
+    abort,
+    flash,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
+from werkzeug.exceptions import HTTPException  # Для перехвата стандартных ошибок Flask
 
 # --- Импортируем наш модуль БД и инициализируем её ---
 from . import database  # Относительный импорт
@@ -82,23 +91,25 @@ oauth = OAuth(app)
 
 # Регистрируем провайдера 'yandex'
 # Читаем Client ID и Secret из переменных окружения
-yandex_client_id = os.environ.get('YANDEX_CLIENT_ID')
-yandex_client_secret = os.environ.get('YANDEX_CLIENT_SECRET')
+yandex_client_id = os.environ.get("YANDEX_CLIENT_ID")
+yandex_client_secret = os.environ.get("YANDEX_CLIENT_SECRET")
 
 if not yandex_client_id or not yandex_client_secret:
-    logger.error("Переменные окружения YANDEX_CLIENT_ID или YANDEX_CLIENT_SECRET не установлены! Авторизация через Яндекс не будет работать.")
+    logger.error(
+        "Переменные окружения YANDEX_CLIENT_ID или YANDEX_CLIENT_SECRET не установлены! Авторизация через Яндекс не будет работать."
+    )
 
 oauth.register(
-    name='yandex',
+    name="yandex",
     client_id=yandex_client_id,
     client_secret=yandex_client_secret,
-    access_token_url='https://oauth.yandex.ru/token',
+    access_token_url="https://oauth.yandex.ru/token",
     access_token_params=None,
-    authorize_url='https://oauth.yandex.ru/authorize',
+    authorize_url="https://oauth.yandex.ru/authorize",
     authorize_params=None,
-    api_base_url='https://login.yandex.ru/', # Базовый URL для запроса информации о пользователе
-    userinfo_endpoint='info?format=json',  # Конечная точка для получения инфо о пользователе
-    client_kwargs={'scope': 'login:info login:email'}, # Запрашиваемые права доступа
+    api_base_url="https://login.yandex.ru/",  # Базовый URL для запроса информации о пользователе
+    userinfo_endpoint="info?format=json",  # Конечная точка для получения инфо о пользователе
+    client_kwargs={"scope": "login:info login:email"},  # Запрашиваемые права доступа
     # Для Яндекса userinfo обычно соответствует ответу от /info
     # Можно определить свою функцию userinfo, если нужно преобразовать ответ
     # userinfo_compliance_fix=lambda resp: resp.json() # Пример простейшего преобразования
@@ -106,95 +117,108 @@ oauth.register(
 
 # --- Роуты Аутентификации ---
 
-@app.route('/login')
+
+@app.route("/login")
 def login():
     """Страница с кнопкой входа через Яндекс."""
     # Если пользователь уже в сессии, редирект на главную или "мои пасты"
-    if 'user_id' in session:
-        return redirect(url_for('home')) # Или 'my_pastes' позже
-    return render_template('login.html') # Создадим этот шаблон
+    if "user_id" in session:
+        return redirect(url_for("home"))  # Или 'my_pastes' позже
+    return render_template("login.html")  # Создадим этот шаблон
 
-@app.route('/login/yandex')
+
+@app.route("/login/yandex")
 def login_yandex():
     """Инициирует процесс OAuth-авторизации через Яндекс."""
     # Формируем URL, на который Яндекс должен вернуть пользователя ПОСЛЕ авторизации
     # Важно, чтобы этот URL был ДОБАВЛЕН в Redirect URI в настройках приложения Яндекс.OAuth!
     # Используем _external=True для получения полного URL
-    redirect_uri = url_for('authorize_yandex', _external=True)
+    redirect_uri = url_for("authorize_yandex", _external=True)
     logger.info(f"Запрос авторизации Яндекс. Redirect URI: {redirect_uri}")
     # Перенаправляем пользователя на страницу авторизации Яндекса
     return oauth.yandex.authorize_redirect(redirect_uri)
 
-@app.route('/auth/yandex/callback') # Этот путь должен совпадать с Redirect URI
+
+@app.route("/auth/yandex/callback")  # Этот путь должен совпадать с Redirect URI
 def authorize_yandex():
     """Обрабатывает ответ от Яндекса после авторизации пользователя."""
     try:
         # Получаем токен доступа от Яндекса, обменивая код авторизации
         # Authlib автоматически берет 'code' из параметров запроса
         token = oauth.yandex.authorize_access_token()
-        if not token or 'access_token' not in token:
-             flash('Ошибка получения токена от Яндекса.', 'danger')
-             logger.error("Не удалось получить access_token от Яндекса.")
-             return redirect(url_for('home'))
+        if not token or "access_token" not in token:
+            flash("Ошибка получения токена от Яндекса.", "danger")
+            logger.error("Не удалось получить access_token от Яндекса.")
+            return redirect(url_for("home"))
 
         # Используем полученный токен для запроса информации о пользователе
         # Authlib автоматически использует userinfo_endpoint, указанный при регистрации
-        resp = oauth.yandex.get('info?format=json') # Эндпоинт Яндекса для инфо
-        resp.raise_for_status() # Проверяем на ошибки HTTP
-        user_info = resp.json() # Получаем данные пользователя в JSON
-        logger.info(f"Получена информация о пользователе Яндекс: {user_info.get('login')}")
+        resp = oauth.yandex.get("info?format=json")  # Эндпоинт Яндекса для инфо
+        resp.raise_for_status()  # Проверяем на ошибки HTTP
+        user_info = resp.json()  # Получаем данные пользователя в JSON
+        logger.info(
+            f"Получена информация о пользователе Яндекс: {user_info.get('login')}"
+        )
 
         # Находим или создаем пользователя в нашей БД
         user_id = database.get_or_create_user(user_info)
 
         if user_id:
             # Сохраняем ID НАШЕГО пользователя в сессию Flask
-            session['user_id'] = user_id
+            session["user_id"] = user_id
             # Сохраняем еще какую-нибудь информацию для отображения, если нужно
-            session['display_name'] = user_info.get('display_name') or user_info.get('login')
-            flash('Вход через Яндекс выполнен успешно!', 'success')
-            logger.info(f"Пользователь Yandex ID {user_info.get('id')} вошел как локальный user_id {user_id}")
+            session["display_name"] = user_info.get("display_name") or user_info.get(
+                "login"
+            )
+            flash("Вход через Яндекс выполнен успешно!", "success")
+            logger.info(
+                f"Пользователь Yandex ID {user_info.get('id')} вошел как локальный user_id {user_id}"
+            )
             # Перенаправляем на главную или страницу "мои пасты"
-            return redirect(url_for('home')) # Заменить на 'my_pastes', когда она будет
+            return redirect(url_for("home"))  # Заменить на 'my_pastes', когда она будет
         else:
-            flash('Не удалось найти или создать пользователя в базе данных.', 'danger')
-            logger.error(f"Не удалось обработать пользователя Yandex: {user_info.get('id')}")
-            return redirect(url_for('home'))
+            flash("Не удалось найти или создать пользователя в базе данных.", "danger")
+            logger.error(
+                f"Не удалось обработать пользователя Yandex: {user_info.get('id')}"
+            )
+            return redirect(url_for("home"))
 
     except Exception as e:
         # Ловим ошибки обмена токенами, запроса userinfo и т.д.
         logger.error(f"Ошибка во время callback от Яндекса: {e}", exc_info=True)
-        flash(f"Произошла ошибка авторизации через Яндекс.", 'danger')
-        return redirect(url_for('home'))
+        flash("Произошла ошибка авторизации через Яндекс.", "danger")
+        return redirect(url_for("home"))
 
-@app.route('/logout')
+
+@app.route("/logout")
 def logout():
     """Очищает сессию пользователя и выходит из системы."""
     # Удаляем наши ключи из сессии
-    session.pop('user_id', None)
-    session.pop('display_name', None)
-    flash('Вы успешно вышли из системы.', 'info')
+    session.pop("user_id", None)
+    session.pop("display_name", None)
+    flash("Вы успешно вышли из системы.", "info")
     logger.info("Пользователь вышел из системы.")
-    return redirect(url_for('home'))
+    return redirect(url_for("home"))
 
 
 # --- Роуты Приложения ---
 
+
 @app.route("/", methods=["GET"])
 def home():
     """Отображает главную страницу с формой для создания пасты."""
-    user_display_name = session.get('display_name')
-    return render_template('home.html', user_display_name=user_display_name)
+    user_display_name = session.get("display_name")
+    return render_template("home.html", user_display_name=user_display_name)
 
 
 @app.route("/", methods=["POST"])
 def create_paste():
     """Принимает данные из формы и создает новую пасту."""
-    content = request.form.get('content')
-    language = request.form.get('language')
+    content = request.form.get("content")
+    language = request.form.get("language")
     # Получаем ID пользователя из сессии (будет None, если не авторизован)
-    user_id = session.get('user_id')
-    user_log_id = user_id if user_id else request.remote_addr # Для логов
+    user_id = session.get("user_id")
+    user_log_id = user_id if user_id else request.remote_addr  # Для логов
 
     logger.info(f"Попытка создания пасты от '{user_log_id}'")
 
@@ -216,29 +240,33 @@ def create_paste():
     paste_key = database.add_paste(content, user_id=user_id, language=language)
 
     if paste_key:
-        paste_url = url_for('view_paste', paste_key=paste_key, _external=True)
+        paste_url = url_for("view_paste", paste_key=paste_key, _external=True)
         logger.info(f"Паста {paste_key} создана (user_id={user_id}). URL: {paste_url}")
         flash(f"Паста создана! Ссылка: {paste_url}", "success")
-        return redirect(url_for('view_paste', paste_key=paste_key))
+        return redirect(url_for("view_paste", paste_key=paste_key))
     else:
         logger.error(f"Не удалось создать пасту для '{user_log_id}'.")
         flash("Произошла ошибка при создании пасты.", "danger")
-        return redirect(url_for('home'))
+        return redirect(url_for("home"))
 
-@app.route('/my-pastes')
+
+@app.route("/my-pastes")
 def my_pastes():
     """Отображает список паст текущего авторизованного пользователя."""
     # Проверяем, есть ли пользователь в сессии
-    user_id = session.get('user_id')
+    user_id = session.get("user_id")
     if not user_id:
         # Если не авторизован, перенаправляем на страницу входа
         flash("Пожалуйста, войдите, чтобы просмотреть свои пасты.", "info")
-        return redirect(url_for('login'))
+        return redirect(url_for("login"))
 
     # Получаем пасты пользователя из БД
-    user_pastes = database.get_user_pastes(user_id) # Функция возвращает список словарей
+    user_pastes = database.get_user_pastes(
+        user_id
+    )  # Функция возвращает список словарей
 
-    return render_template('my_pastes.html', pastes=user_pastes)
+    return render_template("my_pastes.html", pastes=user_pastes)
+
 
 @app.route("/<paste_key>")
 def view_paste(paste_key: str):
@@ -257,13 +285,14 @@ def view_paste(paste_key: str):
         # TODO: (Опционально) Получить display_name автора по author_user_id из БД users
         author_name = None
         # if author_user_id: ...
-        
-        return render_template('view_paste.html',
-                               paste_key=paste_key,
-                               content=content,
-                               language=language,
-                               author_name=author_name # Передаем имя автора в шаблон
-                               )
+
+        return render_template(
+            "view_paste.html",
+            paste_key=paste_key,
+            content=content,
+            language=language,
+            author_name=author_name,  # Передаем имя автора в шаблон
+        )
     else:
         abort(404)
 
