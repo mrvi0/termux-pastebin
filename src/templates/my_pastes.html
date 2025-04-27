@@ -2,27 +2,43 @@
 {% block title %}Мои пасты{% endblock %}
 {% block content %}
     <h2>Мои пасты</h2>
-    {% if pastes %}
-        <ul style="list-style: none; padding-left: 0;">
-            {% for paste in pastes %}
-                <li style="margin-bottom: 1em; padding-bottom: 0.5em; border-bottom: 1px dashed #45475a;">
-                    <a href="{{ url_for('view_paste', paste_key=paste.key) }}" style="font-weight: bold;">
-                        {{ paste.key }}
-                    </a>
-                    {# Статус пасты #}
-                    <span class="paste-status {{ 'status-public' if paste.is_public else 'status-private' }}">
-                        [{{ 'Публичная' if paste.is_public else 'Приватная' }}]
-                    </span>
-                    <pre style="margin-top: 0.5em; margin-bottom: 0.5em; font-size: 0.85em; max-height: 5em; overflow: hidden; background-color: #1e1e2e; border: none; padding: 0.5em;"><code>{{ paste.content[:100] }}{% if paste.content|length > 100 %}...{% endif %}</code></pre>
-                    <small style="color: #7f849c;">
-                        Создано: {{ paste.created_at.strftime('%Y-%m-%d %H:%M:%S') if paste.created_at and paste.created_at.strftime else paste.created_at or 'N/A' }}
-                    </small>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>У вас пока нет созданных паст.</p>
-    {% endif %}
+    {# Оборачиваем весь список и кнопку в одну форму #}
+    <form action="{{ url_for('delete_selected_pastes') }}" method="post" id="delete-pastes-form">
+        {% if pastes %}
+            <ul style="list-style: none; padding-left: 0;">
+                {% for paste in pastes %}
+                    <li style="margin-bottom: 1em; padding: 0.8em; border: 1px solid #45475a; border-radius: 4px; background-color: #3b3d50;">
+                        {# --- Чекбокс для выбора --- #}
+                        <input type="checkbox" name="paste_keys" value="{{ paste.key }}" id="cb_{{ paste.key }}" style="margin-right: 0.5em;">
+                        {# ------------------------ #}
+                        <label for="cb_{{ paste.key }}" style="display: inline-block; width: 90%; cursor: pointer;">
+                            <a href="{{ url_for('view_paste', paste_key=paste.key) }}" style="font-weight: bold;">
+                                {{ paste.key }}
+                            </a>
+                            <span class="paste-status {{ 'status-public' if paste.is_public else 'status-private' }}">
+                                [{{ 'Публичная' if paste.is_public else 'Приватная' }}]
+                            </span>
+                            <pre style="margin-top: 0.5em; margin-bottom: 0.5em; font-size: 0.85em; max-height: 5em; overflow: hidden; background-color: #1e1e2e; border: none; padding: 0.5em;"><code>{{ paste.content }}{% if paste.content and '...' not in paste.content and (paste.content|length == 100 or '[Ошибка' in paste.content) %}...{% endif %}</code></pre>
+                            <small style="color: #7f849c;">
+                                Создано: {{ paste.created_at.strftime('%Y-%m-%d %H:%M:%S') if paste.created_at and paste.created_at.strftime else paste.created_at or 'N/A' }}
+                            </small>
+                         </label>
+                    </li>
+                {% endfor %}
+            </ul>
+            {# --- Кнопка удаления выбранных --- #}
+            <div style="margin-top: 1.5em;">
+                <button type="submit" class="delete-button"
+                        onclick="return confirm('Вы уверены, что хотите удалить выбранные пасты?');">
+                    🗑️ Удалить выбранные
+                </button>
+                <small style="margin-left: 1em; color: #7f849c;">(Выберите пасты с помощью чекбоксов)</small>
+            </div>
+            {# ------------------------------- #}
+        {% else %}
+            <p>У вас пока нет созданных паст.</p>
+        {% endif %}
+    </form>
     <hr style="border-color: #45475a;">
     <a href="{{ url_for('home') }}">➕ Создать новую пасту</a>
 {% endblock %}

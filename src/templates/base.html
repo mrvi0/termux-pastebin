@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}Termux Pastebin{% endblock %}</title>
+    <title>{% block title %}B4DCAT PASTE{% endblock %}</title>
     {# --- ССЫЛКА НА FAVICON --- #}
     {# Вариант 1: Стандартный favicon.ico в корне статики #}
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
@@ -13,129 +13,21 @@
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}"> 
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}"> 
     <link rel="manifest" href="{{ url_for('static', filename='site.webmanifest') }}"> 
-    {# --- КОНЕЦ FAVICON --- #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
+    {# --- ССЫЛКИ НА ШРИФТЫ --- #}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
+    
     <style>
-        /* Простая темная тема, похожая на консоль */
-        body {
-            font-family: Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; /* Моноширинный шрифт */
-            margin: 1em auto; /* Центрируем и добавляем отступы */
-            max-width: 90ch; /* Ограничиваем ширину для читаемости */
-            background-color: #1e1e2e; /* Темный фон */
-            color: #cdd6f4; /* Светлый текст */
-            line-height: 1.6;
-            padding: 1em;
-        }
-        .container {
-            background-color: #313244; /* Чуть светлее фон для контейнера */
-            padding: 1.5em;
-            border-radius: 8px;
-            border: 1px solid #45475a;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        h1, h2 {
-            color: #a6e3a1; /* Зеленый акцент */
-            border-bottom: 1px solid #585b70;
-            padding-bottom: 0.4em;
-            margin-top: 0;
-        }
-        h1 a {
-             color: #a6e3a1;
-             text-decoration: none;
-        }
-        h1 a:hover {
-            color: #f9e2af; /* Желтый при наведении */
-        }
-        a {
-            color: #89b4fa; /* Голубой для ссылок */
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-        textarea {
-            width: 98%;
-            min-height: 250px;
-            background-color: #1e1e2e;
-            color: #cdd6f4;
-            border: 1px solid #585b70;
-            border-radius: 4px;
-            padding: 0.5em;
-            font-family: inherit; /* Наследуем моноширинный шрифт */
-            font-size: 0.95em;
-            margin-bottom: 1em;
-            resize: vertical;
-        }
-        button, input[type=submit] {
-            background-color: #a6e3a1; /* Зеленый */
-            color: #1e1e2e; /* Темный текст на кнопке */
-            border: none;
-            padding: 10px 18px;
-            cursor: pointer;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: 1em;
-            font-family: inherit;
-        }
-        button:hover, input[type=submit]:hover {
-            background-color: #f9e2af; /* Желтый */
-        }
-        pre {
-            background-color: #1e1e2e;
-            padding: 1em;
-            overflow-x: auto; /* Горизонтальная прокрутка для длинных строк */
-            border-radius: 4px;
-            border: 1px solid #585b70;
-            font-size: 0.9em;
-            white-space: pre-wrap;       /* Перенос по словам */
-            word-wrap: break-word;      /* Перенос длинных слов */
-        }
-        code {
-            font-family: inherit;
-        }
-        .paste-info {
-            font-size: 0.9em;
-            color: #7f849c; /* Серый для меты */
-            margin-bottom: 1em;
-            padding-bottom: 0.5em;
-            border-bottom: 1px dashed #45475a;
-        }
-        /* Стили для flash-сообщений */
-        .flash {
-            padding: 1em;
-            margin-bottom: 1em;
-            border-radius: 4px;
-            border: 1px solid;
-        }
-        .flash-success {
-            background-color: #a6e3a1; /* Зеленый */
-            color: #1e1e2e;
-            border-color: #a6e3a1;
-        }
-        .flash-danger {
-            background-color: #f38ba8; /* Красный */
-            color: #1e1e2e;
-            border-color: #f38ba8;
-        }
-        .flash-warning {
-             background-color: #fab387; /* Оранжевый */
-             color: #1e1e2e;
-             border-color: #fab387;
-        }
-        .flash-info {
-             background-color: #89b4fa; /* Голубой */
-             color: #1e1e2e;
-             border-color: #89b4fa;
-        }
-        .status-public { color: #a6e3a1; /* Зеленый */ }
-        .status-private { color: #f38ba8; /* Красный */ }
-        .paste-status { font-size: 0.8em; margin-left: 1em; }
+        
     </style>
     {% block head %}{% endblock %} <!-- Блок для доп. стилей или скриптов в head -->
 </head>
 <body>
     <div class="container">
-        <h1><a href="{{ url_for('home') }}">Termux Pastebin</a></h1>
+        <h1 class="nunito-extrabold"><a href="{{ url_for('home') }}">B4DCAT PASTE</a></h1>
 
         {# --- Навигация с учетом статуса пользователя --- #}
         <nav>
