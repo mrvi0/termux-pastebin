@@ -7,7 +7,7 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 logger = logging.getLogger(__name__)
 
-# --- Загрузка ключа шифрования ---
+# --- Загрузка ключа шифрoвания ---
 # Читаем ключ из переменной окружения
 _encoded_key = os.environ.get("PASTE_ENCRYPTION_KEY")
 _key = None
