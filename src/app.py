@@ -244,10 +244,10 @@ def create_paste():
     if not content or not content.strip():
         flash("Содержимое пасты не может быть пустым!", "danger")
         return redirect(url_for("home"))
-    MAX_PASTE_SIZE_BYTES = 1 * 1024 * 1024  # 1MB
-    if len(content.encode("utf-8", errors="ignore")) > MAX_PASTE_SIZE_BYTES:
+    max_paste_size_bytes = 1 * 1024 * 1024  # 1MB
+    if len(content.encode("utf-8", errors="ignore")) > max_paste_size_bytes:
         flash(
-            f"Ошибка: Максимальный размер пасты {MAX_PASTE_SIZE_BYTES // 1024 // 1024}MB.",
+            f"Ошибка: Максимальный размер пасты {max_paste_size_bytes // 1024 // 1024}MB.",
             "danger",
         )
         return redirect(url_for("home"))
