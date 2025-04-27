@@ -8,6 +8,8 @@ from typing import Any
 
 import shortuuid  # Для генерации коротких ключей
 
+from . import security
+
 # --- Настройка Логгера ---
 # Используем стандартный логгер, т.к. основная настройка будет в app.py
 logger = logging.getLogger(__name__)
@@ -56,8 +58,6 @@ sqlite3.register_converter(
 )  # Связываем тип TIMESTAMP с нашей функцией
 
 
-# --- Инициализация Базы Данных ---
-# --- Инициализация Базы Данных ---
 # --- Инициализация Базы Данных ---
 def init_db():
     """Инициализирует БД и таблицы pastes и users."""
@@ -183,6 +183,19 @@ def add_paste(
     )
     paste_key = su.random(length=8)
     conn: sqlite3.Connection | None = None
+
+    # --- ШИФРОВАНИЕ ПЕРЕД ЗАПИСЬЮ ---
+    content_to_save: str | bytes = content  # По умолчанию сохраняем как есть
+    if not is_public:  # Если паста приватная
+        logger.debug(f"Шифрование приватной пасты {paste_key}...")
+        encrypted_content = security.encrypt_content(content)
+        if encrypted_content is None:
+            logger.error("Не удалось зашифровать контент, паста не будет добавлена.")
+            return None  # Ошибка шифрования
+        content_to_save = encrypted_content  # Сохранять будем зашифрованные байты
+        logger.debug(f"Паста {paste_key} зашифрована ({len(content_to_save)} байт).")
+    # --- КОНЕЦ ШИФРОВАНИЯ ---
+
     try:
         conn = sqlite3.connect(DB_PATH)
         if conn is None:
@@ -193,15 +206,8 @@ def add_paste(
         )
         # --- ИЗМЕНЕНИЕ: Добавляем is_public ---
         cursor.execute(
-            # Явно указываем все колонки
             "INSERT INTO pastes (key, content, language, user_id, is_public) VALUES (?, ?, ?, ?, ?)",
-            (
-                paste_key,
-                content,
-                language,
-                user_id,
-                1 if is_public else 0,
-            ),  # Сохраняем как 1 или 0
+            (paste_key, content_to_save, language, user_id, 1 if is_public else 0),
         )
         conn.commit()
         logger.info(
@@ -245,13 +251,52 @@ def get_paste(paste_key: str) -> tuple[str, str | None, int | None, bool] | None
         )
         row = cursor.fetchone()
         if row:
-            # Преобразуем 0/1 обратно в bool
             is_public_flag = bool(row["is_public"])
+            author_user_id = row["user_id"]
+            language = row["language"]
+            content_from_db = row["content"]  # Это могут быть байты (BLOB) или строка
+
+            final_content: str | None = None
+
+            # --- ДЕШИФРОВАНИЕ ПРИ ЧТЕНИИ ---
+            if not is_public_flag:  # Если паста приватная
+                logger.debug(f"Дешифрование приватной пасты {paste_key}...")
+                if isinstance(content_from_db, bytes):
+                    decrypted_content = security.decrypt_content(content_from_db)
+                    if decrypted_content is None:
+                        logger.error(f"Не удалось дешифровать пасту {paste_key}!")
+                        # Что возвращать в этом случае? Ошибку или спец. текст?
+                        final_content = "[Ошибка дешифрования]"
+                    else:
+                        final_content = decrypted_content
+                        logger.debug(f"Паста {paste_key} успешно дешифрована.")
+                else:
+                    # Если в БД для приватной пасты не байты - это ошибка
+                    logger.error(
+                        f"Приватная паста {paste_key} хранится в БД не как байты (BLOB)! Тип: {type(content_from_db)}"
+                    )
+                    final_content = "[Ошибка формата хранения]"
+            else:  # Если паста публичная
+                # Ожидаем строку, но на всякий случай декодируем, если это байты
+                if isinstance(content_from_db, bytes):
+                    try:
+                        final_content = content_from_db.decode("utf-8")
+                    except UnicodeDecodeError:
+                        logger.error(
+                            f"Не удалось декодировать публичную пасту {paste_key} из байтов."
+                        )
+                        final_content = "[Ошибка декодирования]"
+                elif isinstance(content_from_db, str):
+                    final_content = content_from_db
+                else:
+                    final_content = "[Неизвестный тип контента]"
+            # --- КОНЕЦ ДЕШИФРОВАНИЯ ---
+
             logger.info(
-                f"Паста '{paste_key}' найдена (user_id={row['user_id']}, public={is_public_flag})."
+                f"Паста '{paste_key}' найдена (user_id={author_user_id}, public={is_public_flag})."
             )
-            # Возвращаем кортеж (content, language, user_id, is_public)
-            return row["content"], row["language"], row["user_id"], is_public_flag
+            # Возвращаем расшифрованный/исходный контент
+            return final_content, language, author_user_id, is_public_flag
         else:
             logger.warning(f"Паста '{paste_key}' не найдена.")
             return None
