@@ -1,35 +1,28 @@
-<!-- templates/my_pastes.html -->
 {% extends "base.html" %}
-
 {% block title %}Мои пасты{% endblock %}
-
 {% block content %}
     <h2>Мои пасты</h2>
-
     {% if pastes %}
         <ul style="list-style: none; padding-left: 0;">
             {% for paste in pastes %}
                 <li style="margin-bottom: 1em; padding-bottom: 0.5em; border-bottom: 1px dashed #45475a;">
-                    {# Ссылка на просмотр пасты #}
                     <a href="{{ url_for('view_paste', paste_key=paste.key) }}" style="font-weight: bold;">
                         {{ paste.key }}
                     </a>
-                    {# Отображаем начало контента (например, первые 100 символов) #}
+                    {# Статус пасты #}
+                    <span class="paste-status {{ 'status-public' if paste.is_public else 'status-private' }}">
+                        [{{ 'Публичная' if paste.is_public else 'Приватная' }}]
+                    </span>
                     <pre style="margin-top: 0.5em; margin-bottom: 0.5em; font-size: 0.85em; max-height: 5em; overflow: hidden; background-color: #1e1e2e; border: none; padding: 0.5em;"><code>{{ paste.content[:100] }}{% if paste.content|length > 100 %}...{% endif %}</code></pre>
-                    {# Дата создания #}
                     <small style="color: #7f849c;">
-                        Создано: {{ paste.created_at.strftime('%Y-%m-%d %H:%M:%S') if paste.created_at else 'N/A' }}
-                        {# | Язык: {{ paste.language or 'Plain' }} #}
+                        Создано: {{ paste.created_at.strftime('%Y-%m-%d %H:%M:%S') if paste.created_at and paste.created_at.strftime else paste.created_at or 'N/A' }}
                     </small>
-                    {# TODO: Добавить кнопку "Удалить" для каждой пасты #}
                 </li>
             {% endfor %}
         </ul>
     {% else %}
         <p>У вас пока нет созданных паст.</p>
     {% endif %}
-
     <hr style="border-color: #45475a;">
     <a href="{{ url_for('home') }}">➕ Создать новую пасту</a>
-
 {% endblock %}

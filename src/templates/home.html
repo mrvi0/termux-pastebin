@@ -1,17 +1,15 @@
 {% extends "base.html" %}
-
 {% block title %}Создать новую пасту{% endblock %}
-
 {% block content %}
-    <h2>Новая паста</h2>
-    {# Форма отправляет POST-запрос на тот же URL ('/') #}
+    <h2>Новая паста {% if user_display_name %}от {{ user_display_name }}{% endif %}</h2>
     <form method="post">
-        {# Поле для ввода основного текста пасты #}
-        <textarea name="content"
-                  placeholder="Вставьте ваш текст или код сюда..."
-                  required
-                  autofocus></textarea>
-
+        <textarea name="content" placeholder="Вставьте ваш текст или код сюда..." required autofocus></textarea>
+        <br>
+        {# Чекбокс для публичности #}
+        <div>
+            <input type="checkbox" id="is_public" name="is_public" value="yes" checked>
+            <label for="is_public">Сделать пасту публичной (доступной по ссылке для всех)</label>
+        </div>
         {# Сюда можно добавить выбор языка, если нужна подсветка #}
         {#
         <div>
@@ -28,7 +26,7 @@
         </div>
         <br>
         #}
-
+        <br>
         <button type="submit">Создать пасту</button>
     </form>
 {% endblock %}
