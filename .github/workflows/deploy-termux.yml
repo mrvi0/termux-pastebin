@@ -111,23 +111,24 @@ jobs:
           echo "Deployment process finished successfully."
         shell: bash
 
-      # --- Шаги уведомлений (без изменений) ---
+      # --- Уведомление об УСПЕХЕ ---
       - name: Send Telegram Message on Success
         if: success()
         uses: appleboy/telegram-action@v0.1.1
         with:
-          # Используем env контекст из шага deploy_step или github контекст
           to: ${{ secrets.TG_ALERT_CHAT }}
           token: ${{ secrets.TG_ALERT_TOKEN }}
-          format: markdown
+          format: markdown # Используем Markdown
+          # disable_web_page_preview: true # Раскомментируй, если не хочешь превью ссылок
           message: |
             ✅ *Pastebin Deploy Success!*
-            Branch: `${{ env.BRANCH }}`
-            Commit: [`${{ env.COMMIT_SHA_SHORT }}`](${{ env.COMMIT_URL }}) by `${{ env.ACTOR }}`
-            Project: [${{ github.repository }}](${{ env.REPO_URL }})
+            Branch: `${{ github.ref_name }}`
+            Commit: [`${{ github.sha }}`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) by `${{ github.actor }}`
+            Project: [${{ github.repository }}](${{ github.server_url }}/${{ github.repository }})
             Target: Termux (h1 - ${{ secrets.H1_WG_HOST }}) via VPS1
-            Workflow: [Run #${{ github.run_number }}](${{ env.RUN_URL }})
+            Workflow: [Run #${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
+      # --- Уведомление о НЕУДАЧЕ ---
       - name: Send Telegram Message on Failure
         if: failure()
         uses: appleboy/telegram-action@v0.1.1
@@ -137,9 +138,9 @@ jobs:
           format: markdown
           message: |
             ❌ *Pastebin Deploy Failed!*
-            Branch: `${{ env.BRANCH }}`
-            Actor: `${{ env.ACTOR }}`
-            Project: [${{ github.repository }}](${{ env.REPO_URL }})
+            Branch: `${{ github.ref_name }}`
+            Actor: `${{ github.actor }}`
+            Project: [${{ github.repository }}](${{ github.server_url }}/${{ github.repository }})
             Target: Termux (h1 - ${{ secrets.H1_WG_HOST }}) via VPS1
-            Workflow: [Run #${{ github.run_number }}](${{ env.RUN_URL }})
+            Workflow: [Run #${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
             Check logs for details.
