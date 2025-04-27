@@ -1,7 +1,7 @@
 # Termux Pastebin
 
 <!-- Бейджи пока уберем, так как нет CI/CD и публичного репозитория -->
-[![CI Status](https://github.com/mrvi0/termux-pastebin/actions/workflows/test.yml/badge.svg)](https://github.com/mrvi0/termux-pastebin/actions/workflows/deploy-termux.yml)
+[![CI Status](https://github.com/mrvi0/termux-pastebin/actions/workflows/deploy-termux.yml/badge.svg)](https://github.com/mrvi0/termux-pastebin/actions/workflows/deploy-termux.yml)
 [![Lint Status](https://github.com/mrvi0/termux-pastebin/actions/workflows/lint.yml/badge.svg)](https://github.com/mrvi0/termux-pastebin/actions/workflows/lint.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) <!-- Заменил на MIT, т.к. AGPL может быть избыточен -->
 

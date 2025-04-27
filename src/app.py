@@ -333,9 +333,9 @@ def view_paste(paste_key: str):
         return render_template(
             "view_paste.html",
             paste_key=paste_key,
-            content=content,
+            content=content,  # Передаем уже готовый контент
             language=language,
-            is_public=is_public,  # Передаем статус
+            is_public=is_public,
             author_name=author_name,
         )
     else:
