@@ -26,6 +26,7 @@
     ```bash
     pkg update && pkg upgrade
     pkg install python git ffmpeg libsndfile sqlite # Устанавливаем Python и нужные системные пакеты
+    pkg install rust # Нужно для Authlib, иначе не соберается колесо
     ```
 *   **pip:** Менеджер пакетов Python (обычно идет с Python).
 
