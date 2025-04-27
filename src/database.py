@@ -126,7 +126,7 @@ def add_paste(content: str,
               language: str | None = None,
               is_public: bool = True) -> str | None:
     if not isinstance(content, str) or not content.strip(): return None
-    su = shortuuid.ShortUUID(alphabet="...") # Алфавит
+    su = shortuuid.ShortUUID(alphabet="23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz") # Алфавит
     paste_key = su.random(length=8)
     conn: sqlite3.Connection | None = None
     logger.debug(f"Вызов add_paste для key={paste_key}, user_id={user_id}, public={is_public}")
