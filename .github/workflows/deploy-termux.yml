@@ -26,7 +26,7 @@ jobs:
           mkdir -p ~/.ssh && chmod 700 ~/.ssh
           H1_HOST=${{ secrets.H1_WG_HOST }}
           echo "Scanning host ${H1_HOST} on port 8022..."
-          ssh-keyscan -p 8022 -H "$H1_WG_HOST" >> ~/.ssh/known_hosts
+          ssh-keyscan -p 8022 -v "$H1_WG_HOST" >> ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
         shell: bash
 
