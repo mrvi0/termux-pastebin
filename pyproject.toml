@@ -1,0 +1,42 @@
+# pyproject.toml
+
+# --- Информация о проекте ---
+[tool.poetry] # Если используешь Poetry для управления зависимостями
+name = "termux-pastebin"
+version = "0.1.1" # Следующая версия после удаления Auth
+description = "Simple pastebin service for Termux"
+authors = ["Mr Vi <dev@b4dcat.ru>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.10" 
+Flask = ">=2.0"
+waitress = ">=2.0"
+shortuuid = ">=1.0"
+
+# --- Настройка Ruff ---
+[tool.ruff]
+# Выбираем правила для проверки (например, стандартные + flake8 + isort)
+# Полный список: https://docs.astral.sh/ruff/rules/
+select = ["E", "F", "W", "I", "UP", "N", "B", "C4", "SIM", "TCH"]
+ignore = ["E501"] # Игнорируем проверку длины строки (Black сам форматирует)
+
+# Указываем целевую версию Python
+target-version = "py310" # Соответствует твоей версии Python
+
+# Настраиваем пути, которые нужно проверять
+# Исключаем виртуальное окружение
+extend-exclude = ["venv", ".venv"]
+
+# --- Настройка Mypy ---
+[tool.mypy]
+python_version = "3.10" # Версия Python
+ignore_missing_imports = true # Не ругаться на библиотеки без аннотаций типов
+warn_return_any = false # Отключить предупреждение, если функция возвращает Any
+warn_unused_configs = true
+# Указываем пути для проверки
+files = ["src/"]
+# Исключаем venv
+exclude = ["venv/", ".venv/"]

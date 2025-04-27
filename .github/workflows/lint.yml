@@ -1,0 +1,42 @@
+# .github/workflows/lint.yml
+name: Lint and Type Check
+
+on:
+  push: # Запускать при пуше в любую ветку
+    branches: [ "**" ]
+  pull_request: # Запускать при создании/обновлении Pull Request
+    branches: [ "main" ] # Или на какие ветки у тебя PR
+
+jobs:
+  lint_and_type_check:
+    name: Run linters and type checker
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10' # Укажи свою версию Python
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # Устанавливаем основные зависимости
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          # Устанавливаем dev зависимости (Ruff, Mypy)
+          # Если используешь requirements-dev.txt:
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+          # Если используешь Poetry:
+          # pip install poetry && poetry install --with dev
+
+      - name: Run Ruff linter and formatter check
+        run: |
+          ruff check src/ scripts/
+          ruff format --check src/ scripts/ # --check только проверяет, не изменяет файлы
+
+      - name: Run Mypy type checker
+        run: |
+          mypy src/
