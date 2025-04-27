@@ -1,10 +1,9 @@
 # src/database.py
-import sqlite3
 import logging
-import datetime
+import sqlite3
 from pathlib import Path
-from typing import Optional, Tuple
-import shortuuid # Для генерации коротких ключей
+
+import shortuuid  # Для генерации коротких ключей
 
 # --- Настройка Логгера ---
 # Используем стандартный логгер, т.к. основная настройка будет в app.py
@@ -59,7 +58,7 @@ def init_db():
 
 # --- Функции для Работы с Пастами ---
 
-def add_paste(content: str, language: Optional[str] = None) -> Optional[str]:
+def add_paste(content: str, language: str | None = None) -> str | None:
     """
     Добавляет новую пасту в базу данных.
 
@@ -110,7 +109,7 @@ def add_paste(content: str, language: Optional[str] = None) -> Optional[str]:
             logger.debug("Соединение с БД закрыто после добавления пасты.")
 
 
-def get_paste(paste_key: str) -> Optional[Tuple[str, Optional[str]]]:
+def get_paste(paste_key: str) -> tuple[str, str | None] | None:
     """
     Извлекает содержимое пасты и ее язык (если есть) из БД по ключу.
 

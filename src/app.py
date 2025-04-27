@@ -1,17 +1,14 @@
 # src/app.py
-import os
 import logging
-import logging.handlers # Для настройки логгера
+import logging.handlers  # Для настройки логгера
+import os
 from pathlib import Path
-from flask import (
-    Flask, request, redirect, url_for, render_template,
-    abort, flash
-)
 
-from werkzeug.exceptions import HTTPException # Для перехвата стандартных ошибок Flask
+from flask import Flask, abort, flash, redirect, render_template, request, url_for
+from werkzeug.exceptions import HTTPException  # Для перехвата стандартных ошибок Flask
 
 # --- Импортируем наш модуль БД и инициализируем её ---
-from . import database # Относительный импорт
+from . import database  # Относительный импорт
 
 # --- ДОБАВИМ ОТЛАДКУ ПУТЕЙ ---
 current_file_path = Path(__file__).resolve()

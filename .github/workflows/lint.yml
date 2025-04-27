@@ -4,8 +4,8 @@ name: Lint and Type Check
 on:
   push: # Запускать при пуше в любую ветку
     branches: [ "**" ]
-  pull_request: # Запускать при создании/обновлении Pull Request
-    branches: [ "main" ] # Или на какие ветки у тебя PR
+  pull_request: 
+    branches: [ "main" ] 
 
 jobs:
   lint_and_type_check:
@@ -19,7 +19,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10' # Укажи свою версию Python
+          python-version: '3.10' 
 
       - name: Install dependencies
         run: |
