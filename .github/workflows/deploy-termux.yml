@@ -1,0 +1,126 @@
+name: Deploy Pastebin to Termux (h1)
+
+on:
+  push:
+    branches:
+      - main # Запускать при пуше в main
+
+jobs:
+  deploy:
+    name: Deploy to h1 via SSH
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Получить всю историю
+
+      - name: Setup SSH connection
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY_H1 }}
+
+      - name: Add h1 host to known_hosts
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          H1_HOST=${{ secrets.H1_WG_HOST }}
+          ssh-keyscan -p 8022 -H "$H1_HOST" >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+        shell: bash
+
+      - name: Deploy to h1
+        id: deploy_step # Даем ID шагу, чтобы получить его результат (success/failure)
+        env:
+          H1_USER: ${{ secrets.H1_USER }}
+          H1_HOST: ${{ secrets.H1_WG_HOST }}
+          DEPLOY_DIR: "/data/data/com.termux/files/home/termux-pastebin" # Путь на h1
+          # Передаем данные для уведомлений
+          COMMIT_SHA_SHORT: ${{ github.sha }} # Можно использовать github.sha[:7] для короткого хеша
+          COMMIT_URL: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
+          ACTOR: ${{ github.actor }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          echo "Connecting to ${H1_USER}@${H1_HOST}..."
+          ssh -p 8022 "${H1_USER}@${H1_HOST}" << EOF
+            echo "--- Running deployment script on h1 ---"
+            cd "${DEPLOY_DIR}" || { echo "ERROR: Failed to cd to ${DEPLOY_DIR}"; exit 1; }
+
+            echo "Attempting to stop existing process using stop.sh..."
+            # Используем новый скрипт остановки
+            bash scripts/stop.sh || echo "Stop script finished (may show errors if process wasn't running)."
+            sleep 2
+
+            echo "Updating code..."
+            git fetch origin
+            git reset --hard origin/main
+            echo "Code updated."
+
+            echo "Activating venv..."
+            source "${DEPLOY_DIR}/venv/bin/activate" || { echo "ERROR: Failed to activate venv"; exit 1; }
+
+            echo "Updating dependencies..."
+            pip install -r requirements.txt
+            echo "Dependencies updated."
+
+            echo "Starting application using run_prod.sh..."
+            chmod +x ./scripts/run_prod.sh
+            # Запускаем в фоне, вывод идет в лог файл, указанный в скрипте
+            nohup ./scripts/run_prod.sh &
+            sleep 2 # Небольшая пауза после запуска
+
+            # Простая проверка, что waitress запустился (ищет процесс)
+            if pgrep -f "waitress-serve.*src.app:app" > /dev/null; then
+              echo "Waitress process seems to be running."
+            else
+              echo "ERROR: Waitress process not found after start!"
+              # Показываем последние строки лога waitress, если он есть
+              if [ -f "pastebin-waitress.log" ]; then
+                echo "--- Last lines of pastebin-waitress.log ---"
+                tail -n 20 pastebin-waitress.log
+                echo "----------------------------------------"
+              fi
+              exit 1 # Завершаем скрипт с ошибкой
+            fi
+
+            echo "--- Deployment script finished ---"
+          EOF
+        shell: bash
+
+      # --- Уведомление об УСПЕХЕ ---
+      - name: Send Telegram Message on Success
+        # Запускается только если предыдущие шаги (особенно deploy_step) успешны
+        if: success()
+        uses: appleboy/telegram-action@v0.1.1
+        with:
+          to: ${{ secrets.TG_ALERT_CHAT }} # ID чата/пользователя для уведомлений
+          token: ${{ secrets.TG_ALERT_TOKEN }} # Токен бота для уведомлений
+          format: markdown # Используем Markdown
+          # disable_web_page_preview: true # Опционально: отключить превью ссылок
+          message: |
+            ✅ *Pastebin Deploy Success!*
+            Branch: `${{ env.BRANCH }}`
+            Commit: [`${{ env.COMMIT_SHA_SHORT }}`](${{ env.COMMIT_URL }}) by `${{ env.ACTOR }}`
+            Project: [${{ github.repository }}](${{ env.REPO_URL }})
+            Target: Termux (h1)
+            Workflow: [Run #${{ github.run_number }}](${{ env.RUN_URL }})
+
+      # --- Уведомление о НЕУДАЧЕ ---
+      - name: Send Telegram Message on Failure
+        # Запускается только если любой из предыдущих шагов завершился с ошибкой
+        if: failure()
+        uses: appleboy/telegram-action@v0.1.1
+        with:
+          to: ${{ secrets.TG_ALERT_CHAT }}
+          token: ${{ secrets.TG_ALERT_TOKEN }}
+          format: markdown
+          message: |
+            ❌ *Pastebin Deploy Failed!*
+            Branch: `${{ env.BRANCH }}`
+            Actor: `${{ env.ACTOR }}`
+            Project: [${{ github.repository }}](${{ env.REPO_URL }})
+            Target: Termux (h1)
+            Workflow: [Run #${{ github.run_number }}](${{ env.RUN_URL }})
+            Check logs for details.
