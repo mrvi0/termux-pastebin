@@ -1,115 +1,135 @@
-name: Deploy Pastebin to Termux (h1)
+name: Deploy Pastebin to Termux (h1) via VPS
 
 on:
   push:
     branches:
-      - main # Запускать при пуше в main
+      - main
 
 jobs:
   deploy:
-    name: Deploy to h1 via SSH
+    name: Deploy to h1 via VPS1
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Получить всю историю
+          fetch-depth: 0
 
-      - name: Setup SSH connection
+      - name: Setup SSH connection to VPS1
         uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY_H1 }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY_VPS1 }} # Ключ для доступа к VPS1
 
-      - name: Add h1 host to known_hosts
+      - name: Add VPS1 host to known_hosts
         run: |
           mkdir -p ~/.ssh && chmod 700 ~/.ssh
-          H1_HOST=${{ secrets.H1_WG_HOST }}
-          echo "Scanning host ${H1_HOST} on port 8022..."
-          ssh-keyscan -p 8022 -v "$H1_HOST" >> ~/.ssh/known_hosts
+          VPS1_HOST=${{ secrets.VPS1_HOST }}
+          ssh-keyscan -H "$VPS1_HOST" >> ~/.ssh/known_hosts # Стандартный порт 22
           chmod 600 ~/.ssh/known_hosts
         shell: bash
 
-      - name: Deploy to h1
-        id: deploy_step # Даем ID шагу, чтобы получить его результат (success/failure)
+      - name: Execute deployment script on h1 via VPS1
+        id: deploy_step
         env:
+          VPS1_USER: ${{ secrets.VPS1_USER }}
+          VPS1_HOST: ${{ secrets.VPS1_HOST }}
           H1_USER: ${{ secrets.H1_USER }}
-          H1_HOST: ${{ secrets.H1_WG_HOST }}
+          H1_WG_HOST: ${{ secrets.H1_WG_HOST }}
+          H1_SSH_KEY_PATH: ${{ secrets.H1_SSH_KEY_PATH_ON_VPS }} # Путь к ключу h1 НА VPS
           DEPLOY_DIR: "/data/data/com.termux/files/home/termux-pastebin" # Путь на h1
-          # Передаем данные для уведомлений
-          COMMIT_SHA_SHORT: ${{ github.sha }} # Можно использовать github.sha[:7] для короткого хеша
+          # Переменные для уведомлений
+          COMMIT_SHA_SHORT: ${{ github.sha }}
           COMMIT_URL: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
           ACTOR: ${{ github.actor }}
           REPO_URL: ${{ github.server_url }}/${{ github.repository }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           BRANCH: ${{ github.ref_name }}
         run: |
-          echo "Connecting to ${H1_USER}@${H1_HOST}..."
-          ssh -p 8022 "${H1_USER}@${H1_HOST}" << EOF
-            echo "--- Running deployment script on h1 ---"
-            cd "${DEPLOY_DIR}" || { echo "ERROR: Failed to cd to ${DEPLOY_DIR}"; exit 1; }
+          echo "Connecting to VPS1 (${VPS1_USER}@${VPS1_HOST})..."
+          # Команда SSH к VPS1, которая внутри выполняет SSH к h1
+          ssh "${VPS1_USER}@${VPS1_HOST}" << VPS_EOF
+            echo "--- Connected to VPS1. Now connecting to h1 (${H1_USER}@${H1_WG_HOST})... ---"
 
-            echo "Attempting to stop existing process using stop.sh..."
-            # Используем новый скрипт остановки
-            bash scripts/stop.sh || echo "Stop script finished (may show errors if process wasn't running)."
-            sleep 2
+            # Выполняем команды на h1, используя ключ, хранящийся на VPS1
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \\
+                -p 8022 \\
+                -i "${H1_SSH_KEY_PATH}" \\
+                "${H1_USER}@${H1_WG_HOST}" << H1_EOF
+          
+              echo "--- Running deployment script on h1 ---"
+              cd "${DEPLOY_DIR}" || { echo "ERROR: Failed to cd to ${DEPLOY_DIR}"; exit 1; }
 
-            echo "Updating code..."
-            git fetch origin
-            git reset --hard origin/main
-            echo "Code updated."
+              echo "Attempting to stop existing process using stop.sh..."
+              bash scripts/stop.sh || echo "Stop script finished."
+              sleep 2
 
-            echo "Activating venv..."
-            source "${DEPLOY_DIR}/venv/bin/activate" || { echo "ERROR: Failed to activate venv"; exit 1; }
+              echo "Updating code..."
+              git fetch origin
+              git reset --hard origin/main
+              echo "Code updated."
 
-            echo "Updating dependencies..."
-            pip install -r requirements.txt
-            echo "Dependencies updated."
+              echo "Activating venv..."
+              source "${DEPLOY_DIR}/venv/bin/activate" || { echo "ERROR: Failed to activate venv"; exit 1; }
 
-            echo "Starting application using run_prod.sh..."
-            chmod +x ./scripts/run_prod.sh
-            # Запускаем в фоне, вывод идет в лог файл, указанный в скрипте
-            nohup ./scripts/run_prod.sh &
-            sleep 2 # Небольшая пауза после запуска
+              echo "Updating dependencies..."
+              pip install -r requirements.txt
+              echo "Dependencies updated."
 
-            # Простая проверка, что waitress запустился (ищет процесс)
-            if pgrep -f "waitress-serve.*src.app:app" > /dev/null; then
-              echo "Waitress process seems to be running."
-            else
-              echo "ERROR: Waitress process not found after start!"
-              # Показываем последние строки лога waitress, если он есть
-              if [ -f "pastebin-waitress.log" ]; then
-                echo "--- Last lines of pastebin-waitress.log ---"
-                tail -n 20 pastebin-waitress.log
-                echo "----------------------------------------"
+              echo "Starting application using run_prod.sh..."
+              chmod +x ./scripts/run_prod.sh
+              nohup ./scripts/run_prod.sh &
+              sleep 2
+
+              if pgrep -f "waitress-serve.*src.app:app" > /dev/null; then
+                echo "Waitress process seems to be running."
+              else
+                echo "ERROR: Waitress process not found after start!"
+                if [ -f "pastebin-waitress.log" ]; then
+                  echo "--- Last lines of pastebin-waitress.log ---"; tail -n 20 pastebin-waitress.log; echo "--- End log ---";
+                fi
+                exit 1
               fi
-              exit 1 # Завершаем скрипт с ошибкой
-            fi
+              echo "--- Deployment script on h1 finished ---"
+          H1_EOF
 
-            echo "--- Deployment script finished ---"
-          EOF
+            # Проверяем код возврата SSH к h1
+            H1_EXIT_CODE=\$?
+            if [ \$H1_EXIT_CODE -ne 0 ]; then
+                echo "ERROR: SSH command to h1 failed with exit code \$H1_EXIT_CODE"
+                exit \$H1_EXIT_CODE
+            fi
+            echo "--- Disconnected from h1. Exiting VPS1. ---"
+          VPS_EOF
+
+          # Проверяем код возврата SSH к VPS1
+          VPS1_EXIT_CODE=\$?
+          if [ \$VPS1_EXIT_CODE -ne 0 ]; then
+              echo "ERROR: SSH command to VPS1 failed with exit code \$VPS1_EXIT_CODE"
+              exit \$VPS1_EXIT_CODE
+          fi
+          echo "Deployment process finished successfully."
         shell: bash
 
-      # --- Уведомление об УСПЕХЕ ---
+      # --- Шаги уведомлений (без изменений) ---
       - name: Send Telegram Message on Success
-        if: success() # Запускается если deploy_step успешен
+        if: success()
         uses: appleboy/telegram-action@v0.1.1
         with:
+          # Используем env контекст из шага deploy_step или github контекст
           to: ${{ secrets.TG_ALERT_CHAT }}
           token: ${{ secrets.TG_ALERT_TOKEN }}
           format: markdown
-          # Используем контексты github и env напрямую здесь
           message: |
             ✅ *Pastebin Deploy Success!*
-            Branch: `${{ github.ref_name }}`
-            Commit: [`${{ github.sha }}`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) by `${{ github.actor }}`
-            Project: [${{ github.repository }}](${{ github.server_url }}/${{ github.repository }})
-            Target: Termux (h1 - ${{ secrets.H1_WG_HOST }})
-            Workflow: [Run #${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            Branch: `${{ env.BRANCH }}`
+            Commit: [`${{ env.COMMIT_SHA_SHORT }}`](${{ env.COMMIT_URL }}) by `${{ env.ACTOR }}`
+            Project: [${{ github.repository }}](${{ env.REPO_URL }})
+            Target: Termux (h1 - ${{ secrets.H1_WG_HOST }}) via VPS1
+            Workflow: [Run #${{ github.run_number }}](${{ env.RUN_URL }})
 
-      # --- Уведомление о НЕУДАЧЕ ---
       - name: Send Telegram Message on Failure
-        if: failure() # Запускается если deploy_step или любой предыдущий шаг упал
+        if: failure()
         uses: appleboy/telegram-action@v0.1.1
         with:
           to: ${{ secrets.TG_ALERT_CHAT }}
@@ -117,9 +137,9 @@ jobs:
           format: markdown
           message: |
             ❌ *Pastebin Deploy Failed!*
-            Branch: `${{ github.ref_name }}`
-            Actor: `${{ github.actor }}`
-            Project: [${{ github.repository }}](${{ github.server_url }}/${{ github.repository }})
-            Target: Termux (h1 - ${{ secrets.H1_WG_HOST }})
-            Workflow: [Run #${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            Branch: `${{ env.BRANCH }}`
+            Actor: `${{ env.ACTOR }}`
+            Project: [${{ github.repository }}](${{ env.REPO_URL }})
+            Target: Termux (h1 - ${{ secrets.H1_WG_HOST }}) via VPS1
+            Workflow: [Run #${{ github.run_number }}](${{ env.RUN_URL }})
             Check logs for details.
