@@ -1,50 +1,24 @@
 {% extends "base.html" %}
-
-{# Устанавливаем заголовок вкладки динамически #}
 {% block title %}
-    {% if content %}
-        Паста: {{ paste_key }}
-    {% else %}
-        Ошибка: Паста не найдена
-    {% endif %}
+    {% if content %} Паста: {{ paste_key }} {% else %} Ошибка: Паста не найдена {% endif %}
 {% endblock %}
 
 {% block content %}
-  {# Проверяем, передано ли содержимое пасты #}
   {% if content %}
-    {# Отображаем мета-информацию о пасте #}
-    <div class="paste-info">
-      Ключ: <strong>{{ paste_key }}</strong>
-      {# Отображаем язык, если он был указан, иначе 'Plain Text' #}
-      {# | Язык: {{ language or 'Plain Text' }} #}
-      {# Сюда можно добавить дату создания, если передавать ее из Flask #}
-      {# | Создано: {{ created_at.strftime('%Y-%m-%d %H:%M:%S') if created_at else 'Неизвестно' }} #}
-    </div>
-
-    {# Отображаем содержимое пасты внутри <pre><code> для сохранения форматирования #}
-    {# Класс language-xx используется библиотеками подсветки синтаксиса #}
+  <div class="paste-info">
+    Ключ: <strong>{{ paste_key }}</strong>
+    {# Используем класс CSS вместо style #}
+    | Статус: <span class="{{ 'status-public' if is_public else 'status-private' }}">
+                {{ 'Публичная' if is_public else 'Приватная' }}
+              </span>
+    {% if author_name %} | Автор: {{ author_name }} {% endif %}
+  </div>
     <pre><code class="{{ 'language-' + language if language else '' }}">{{ content }}</code></pre>
-
     <hr style="border-color: #45475a;">
-    {# Ссылка для создания новой пасты #}
     <a href="{{ url_for('home') }}">➕ Создать новую пасту</a>
-
-  {# Если содержимое не передано (паста не найдена) #}
   {% else %}
     <h2>⚠️ Паста не найдена</h2>
     <p>Паста с ключом <strong>'{{ paste_key }}'</strong> не существует или была удалена.</p>
     <a href="{{ url_for('home') }}">← На главную</a>
   {% endif %}
 {% endblock %}
-
-{# Опционально: Блок для скриптов, например, инициализация highlight.js #}
-{# {% block scripts %}
-  <script>
-    // Находим все блоки code и применяем подсветку
-    document.addEventListener('DOMContentLoaded', (event) => {
-      document.querySelectorAll('pre code').forEach((block) => {
-        hljs.highlightElement(block);
-      });
-    });
-  </script>
-{% endblock %} #}

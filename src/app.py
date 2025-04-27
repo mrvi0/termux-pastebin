@@ -227,6 +227,7 @@ def create_paste():
     """Принимает данные из формы и создает новую пасту."""
     content = request.form.get("content")
     language = request.form.get("language")
+    is_public_from_form = request.form.get("is_public") == "yes"
     # Получаем ID пользователя из сессии (будет None, если не авторизован)
     user_id = session.get("user_id")
     user_log_id = user_id if user_id else request.remote_addr  # Для логов
@@ -248,16 +249,20 @@ def create_paste():
         logger.warning(f"Попытка создания слишком большой пасты от '{user_log_id}'.")
         return redirect(url_for("home"))
 
-    paste_key = database.add_paste(content, user_id=user_id, language=language)
+    paste_key = database.add_paste(
+        content, user_id=user_id, language=language, is_public=is_public_from_form
+    )
 
     if paste_key:
         paste_url = url_for("view_paste", paste_key=paste_key, _external=True)
-        logger.info(f"Паста {paste_key} создана (user_id={user_id}). URL: {paste_url}")
+        logger.info(
+            f"Паста {paste_key} создана (user_id={user_id}, public={is_public_from_form}). URL: {paste_url}"
+        )
         flash(f"Паста создана! Ссылка: {paste_url}", "success")
         return redirect(url_for("view_paste", paste_key=paste_key))
     else:
         logger.error(f"Не удалось создать пасту для '{user_log_id}'.")
-        flash("Произошла ошибка при создании пасты.", "danger")
+        flash("Произошла ошибка при создании пасты. Попробуйте снова.", "danger")
         return redirect(url_for("home"))
 
 
@@ -267,14 +272,10 @@ def my_pastes():
     # Проверяем, есть ли пользователь в сессии
     user_id = session.get("user_id")
     if not user_id:
-        # Если не авторизован, перенаправляем на страницу входа
         flash("Пожалуйста, войдите, чтобы просмотреть свои пасты.", "info")
         return redirect(url_for("login"))
 
-    # Получаем пасты пользователя из БД
-    user_pastes = database.get_user_pastes(
-        user_id
-    )  # Функция возвращает список словарей
+    user_pastes = database.get_user_pastes(user_id)  # Функция уже возвращает is_public
 
     return render_template("my_pastes.html", pastes=user_pastes)
 
@@ -292,10 +293,27 @@ def view_paste(paste_key: str):
 
     result = database.get_paste(paste_key)
     if result:
-        content, language, author_user_id = result
+        content, language, author_user_id, is_public = result
         # TODO: (Опционально) Получить display_name автора по author_user_id из БД users
         author_name = None
         # if author_user_id: ...
+        current_user_id = session.get("user_id")
+
+        if not is_public:  # Если паста не публичная
+            if current_user_id is None:  # А пользователь не авторизован
+                logger.warning(
+                    f"Анонимный доступ запрещен к приватной пасте '{paste_key}'."
+                )
+                abort(403)  # Forbidden (или 404, чтобы скрыть существование)
+            elif current_user_id != author_user_id:  # И пользователь не автор
+                logger.warning(
+                    f"Доступ пользователя {current_user_id} запрещен к приватной пасте '{paste_key}' (автор: {author_user_id})."
+                )
+                abort(403)  # Forbidden (или 404)
+            # Если пользователь автор - доступ разрешен
+            logger.info(
+                f"Доступ пользователя {current_user_id} разрешен к его приватной пасте '{paste_key}'."
+            )
 
         return render_template(
             "view_paste.html",
@@ -305,6 +323,7 @@ def view_paste(paste_key: str):
             author_name=author_name,  # Передаем имя автора в шаблон
         )
     else:
+        logger.warning(f"Паста '{paste_key}' не найдена.")
         abort(404)
 
 

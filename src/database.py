@@ -58,36 +58,44 @@ sqlite3.register_converter(
 
 # --- Инициализация Базы Данных ---
 # --- Инициализация Базы Данных ---
+# --- Инициализация Базы Данных ---
 def init_db():
-    """
-    Инициализирует файл БД (внутри src/data) и создает таблицы pastes и users.
-    """
+    """Инициализирует БД и таблицы pastes и users."""
     try:
-        # Убедимся, что папка 'src/data' существует
         DATA_DIR.mkdir(exist_ok=True)
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        logger.info(
-            f"Проверка/создание таблиц в БД: {DB_PATH}"
-        )  # Путь теперь будет src/data/pastes.db
+        logger.info(f"Проверка/создание таблиц в БД: {DB_PATH}")
 
         # --- Таблица Паст ---
+        # Добавляем is_public
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS pastes (
                 key TEXT PRIMARY KEY, content TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 language TEXT, expires_at TIMESTAMP,
                 user_id INTEGER,
+                is_public BOOLEAN DEFAULT 1 CHECK(is_public IN (0, 1)), -- <-- ДОБАВЛЕНО
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
             )
         """)
+        # Попробуем добавить колонку, если таблица уже существует (может упасть, если колонка есть)
+        with contextlib.suppress(sqlite3.OperationalError):
+            cursor.execute(
+                "ALTER TABLE pastes ADD COLUMN is_public BOOLEAN DEFAULT 1 CHECK(is_public IN (0, 1))"
+            )
+            logger.info("Добавлена колонка 'is_public' в таблицу 'pastes'.")
+
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_pastes_key ON pastes (key);")
         cursor.execute(
             "CREATE INDEX IF NOT EXISTS idx_pastes_user_id ON pastes (user_id);"
         )
-        logger.debug("Таблица 'pastes' проверена/создана.")
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_pastes_public ON pastes (is_public);"
+        )  # <-- Индекс для is_public
+        logger.debug("Таблица 'pastes' проверена/обновлена.")
 
-        # --- Таблица Пользователей ---
+        # --- Таблица Пользователей (без изменений) ---
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT, yandex_id TEXT UNIQUE NOT NULL,
@@ -101,8 +109,7 @@ def init_db():
         logger.debug("Таблица 'users' проверена/создана.")
 
         conn.commit()
-        with contextlib.suppress(sqlite3.Error):  # Лучше ловить конкретную ошибку
-            conn.close()
+        conn.close()
         logger.info("Инициализация базы данных успешно завершена.")
     except sqlite3.Error as e:
         logger.critical(
@@ -112,7 +119,6 @@ def init_db():
 
 
 # --- Функции для Работы с Пастами ---
-# --- Функции для пользователей (без изменений) ---
 def get_or_create_user(yandex_data: dict[str, Any]) -> int | None:
     # ... (код функции без изменений, использует DB_PATH) ...
     yandex_id = yandex_data.get("id")
@@ -164,9 +170,12 @@ def get_or_create_user(yandex_data: dict[str, Any]) -> int | None:
 
 # --- Функции для паст (без изменений в логике, только путь к БД) ---
 def add_paste(
-    content: str, user_id: int | None = None, language: str | None = None
-) -> str | None:
-    # ... (код функции без изменений, использует DB_PATH) ...
+    content: str,
+    user_id: int | None = None,
+    language: str | None = None,
+    is_public: bool = True,
+) -> str | None:  # <-- Добавлен is_public
+    """Добавляет пасту, опционально привязывая к user_id и указывая публичность."""
     if not isinstance(content, str) or not content.strip():
         return None
     su = shortuuid.ShortUUID(
@@ -176,63 +185,87 @@ def add_paste(
     conn: sqlite3.Connection | None = None
     try:
         conn = sqlite3.connect(DB_PATH)
+        if conn is None:
+            return None
         cursor: Any = conn.cursor()
+        logger.debug(
+            f"Попытка вставить пасту {paste_key} (user_id={user_id}, public={is_public})"
+        )
+        # --- ИЗМЕНЕНИЕ: Добавляем is_public ---
         cursor.execute(
-            "INSERT INTO pastes (key, content, language, user_id) VALUES (?, ?, ?, ?)",
-            (paste_key, content, language, user_id),
+            # Явно указываем все колонки
+            "INSERT INTO pastes (key, content, language, user_id, is_public) VALUES (?, ?, ?, ?, ?)",
+            (
+                paste_key,
+                content,
+                language,
+                user_id,
+                1 if is_public else 0,
+            ),  # Сохраняем как 1 или 0
         )
         conn.commit()
-        logger.info(f"Паста {paste_key} добавлена (user_id={user_id}).")
+        logger.info(
+            f"Паста {paste_key} добавлена (user_id={user_id}, public={is_public})."
+        )
         return paste_key
     except sqlite3.IntegrityError:
         logger.warning(f"Коллизия ключа '{paste_key}', генерирую новый...")
-        # Закрываем перед рекурсией (здесь suppress не нужен)
         if conn:
             with contextlib.suppress(sqlite3.Error):
                 conn.close()
-            conn = None  # Сбрасываем conn после закрытия
-        # --- КОНЕЦ ИЗМЕНЕНИЯ ---
-        return add_paste(content, user_id, language)  # Рекурсивный вызов
+            conn = None
+        # Передаем все аргументы в рекурсию
+        return add_paste(content, user_id, language, is_public)
     except sqlite3.Error as e:
         logger.error(f"Ошибка добавления пасты в БД: {e}", exc_info=True)
         return None
     finally:
-        if (
-            conn
-        ):  # Закрываем, только если он не был закрыт в блоке except IntegrityError
+        if conn:
             with contextlib.suppress(sqlite3.Error):
                 conn.close()
 
 
-def get_paste(paste_key: str) -> tuple[str, str | None, int | None] | None:
-    # ... (код функции без изменений, использует DB_PATH) ...
+# Возвращаемый тип теперь включает bool для is_public
+def get_paste(paste_key: str) -> tuple[str, str | None, int | None, bool] | None:
+    """Получает пасту, ID ее автора и статус публичности."""
     if not isinstance(paste_key, str) or not paste_key:
         return None
     conn: sqlite3.Connection | None = None
     try:
         conn = sqlite3.connect(DB_PATH)
+        if conn is None:
+            return None
         conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
+        cursor: Any = conn.cursor()
+        logger.debug(f"Поиск пасты с ключом: {paste_key}")
+        # --- ИЗМЕНЕНИЕ: Выбираем и is_public ---
         cursor.execute(
-            "SELECT content, language, user_id FROM pastes WHERE key = ?", (paste_key,)
+            "SELECT content, language, user_id, is_public FROM pastes WHERE key = ?",
+            (paste_key,),
         )
         row = cursor.fetchone()
         if row:
-            return row["content"], row["language"], row["user_id"]
+            # Преобразуем 0/1 обратно в bool
+            is_public_flag = bool(row["is_public"])
+            logger.info(
+                f"Паста '{paste_key}' найдена (user_id={row['user_id']}, public={is_public_flag})."
+            )
+            # Возвращаем кортеж (content, language, user_id, is_public)
+            return row["content"], row["language"], row["user_id"], is_public_flag
         else:
+            logger.warning(f"Паста '{paste_key}' не найдена.")
             return None
     except sqlite3.Error as e:
         logger.error(f"Ошибка получения пасты '{paste_key}': {e}", exc_info=True)
         return None
     finally:
         if conn:
-            # --- Используем suppress ---
-            with contextlib.suppress(sqlite3.Error):  # Ловим sqlite3.Error
+            with contextlib.suppress(sqlite3.Error):
                 conn.close()
 
 
 def get_user_pastes(user_id: int, limit: int = 50) -> list[dict[str, Any]]:
-    """Получает последние N паст пользователя, преобразуя created_at в datetime."""
+    """Получает последние N паст пользователя, включая статус публичности."""
     if not user_id:
         return []
     conn: sqlite3.Connection | None = None
@@ -244,44 +277,38 @@ def get_user_pastes(user_id: int, limit: int = 50) -> list[dict[str, Any]]:
         conn.row_factory = sqlite3.Row
         cursor: Any = conn.cursor()
         logger.debug(f"Получение паст для user_id={user_id} (limit={limit})")
+        # --- ИЗМЕНЕНИЕ: Выбираем и is_public ---
         cursor.execute(
-            # Убедимся, что created_at имеет тип TIMESTAMP при создании таблицы
-            "SELECT key, content, created_at, language FROM pastes WHERE user_id = ? ORDER BY created_at DESC LIMIT ?",
+            """SELECT key, content, created_at, language, is_public
+               FROM pastes
+               WHERE user_id = ?
+               ORDER BY created_at DESC
+               LIMIT ?""",
             (user_id, limit),
         )
         rows = cursor.fetchall()
         for row_raw in rows:
-            # Преобразуем sqlite3.Row в словарь
             paste_dict = dict(row_raw)
-            # created_at должен быть уже преобразован конвертером,
-            # но на всякий случай проверим и преобразуем, если это строка
+            # Преобразуем is_public в bool
+            paste_dict["is_public"] = bool(
+                paste_dict.get("is_public", 1)
+            )  # По умолчанию считаем публичной
+            # Обрабатываем timestamp (как в прошлый раз)
             created_at_val = paste_dict.get("created_at")
             if isinstance(created_at_val, str):
-                converted_dt = convert_timestamp(
-                    created_at_val.encode()
-                )  # Пытаемся конвертировать строку
+                converted_dt = convert_timestamp(created_at_val.encode())
                 if converted_dt:
                     paste_dict["created_at"] = converted_dt
-                else:
-                    logger.warning(
-                        f"Повторная попытка конвертации created_at не удалась для {created_at_val}"
-                    )
-                    # Оставляем как есть или ставим None
-                    # paste_dict['created_at'] = None
             elif not isinstance(created_at_val, datetime.datetime):
-                logger.warning(
-                    f"Неожиданный тип для created_at: {type(created_at_val)}"
-                )
-                # Можно оставить как есть или None
-                # paste_dict['created_at'] = None
+                paste_dict["created_at"] = None  # Ставим None если тип неверный
 
             pastes.append(paste_dict)
+        logger.info(f"Найдено {len(pastes)} паст для user_id={user_id}.")
         return pastes
     except sqlite3.Error as e:
         logger.error(f"Ошибка получения паст для user_id={user_id}: {e}", exc_info=True)
         return []
     finally:
         if conn:
-            # --- Используем suppress ---
-            with contextlib.suppress(sqlite3.Error):  # Ловим sqlite3.Error
+            with contextlib.suppress(sqlite3.Error):
                 conn.close()
