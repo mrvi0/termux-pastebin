@@ -202,10 +202,40 @@ from werkzeug.exceptions import HTTPException # Для перехвата ста
 # --- Импортируем наш модуль БД и инициализируем её ---
 from . import database # Относительный импорт
 
+# --- ДОБАВИМ ОТЛАДКУ ПУТЕЙ ---
+print("--- Debugging Paths ---")
+current_file_path = Path(__file__).resolve()
+print(f"Current file (__file__): {current_file_path}")
+src_dir = current_file_path.parent
+print(f"Source directory (src_dir): {src_dir}")
+project_root = src_dir.parent
+print(f"Project root (project_root): {project_root}")
+templates_dir = src_dir / "templates"
+print(f"Templates directory (templates_dir): {templates_dir}")
+static_dir = src_dir / "static"
+print(f"Static directory (static_dir): {static_dir}")
+print(f"Templates directory exists? {templates_dir.exists()}")
+print(f"Templates directory is dir? {templates_dir.is_dir()}")
+print(f"Home template exists? {(templates_dir / 'home.html').exists()}")
+print(f"View template exists? {(templates_dir / 'view_paste.html').exists()}")
+print("--- End Debugging Paths ---")
+# --- КОНЕЦ ОТЛАДКИ ПУТЕЙ ---
+
+# --- Определяем абсолютный путь к папке templates ВНУТРИ src ---
+# Путь к текущему файлу (app.py)
+current_file_path = Path(__file__).resolve()
+# Путь к директории src/, где лежит app.py
+src_dir = current_file_path.parent
+# Абсолютный путь к папке templates ВНУТРИ src/
+templates_dir = src_dir / "templates"
+# Абсолютный путь к папке static ВНУТРИ src/ (если она там будет)
+static_dir = src_dir / "static"
+
 # --- Настройка Приложения Flask ---
+# Указываем АБСОЛЮТНЫЕ пути к папкам ВНУТРИ src
 app = Flask(__name__,
-            template_folder='../templates', # Указываем путь к шаблонам относительно папки src
-            static_folder='../static' # Опционально: папка для статики (CSS, JS), если будет
+            template_folder=str(templates_dir), # Путь к src/templates
+            static_folder=str(static_dir)       # Путь к src/static
             )
 
 # --- Конфигурация Flask ---
