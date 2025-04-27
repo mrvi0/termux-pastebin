@@ -17,6 +17,7 @@ waitress = ">=2.0"
 shortuuid = ">=1.0"
 Authlib = ">=1.0"
 requests = ">=2.25"
+Werkzeug = ">=2.3"
 
 # --- Настройка Ruff ---
 [tool.ruff]
