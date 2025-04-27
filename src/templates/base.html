@@ -4,6 +4,17 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Termux Pastebin{% endblock %}</title>
+    {# --- ССЫЛКА НА FAVICON --- #}
+    {# Вариант 1: Стандартный favicon.ico в корне статики #}
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+    {# Вариант 2: Если используешь PNG (или другой тип) #}
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}"> 
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}"> 
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}"> 
+    <link rel="manifest" href="{{ url_for('static', filename='site.webmanifest') }}"> 
+    {# --- КОНЕЦ FAVICON --- #}
+
     <style>
         /* Простая темная тема, похожая на консоль */
         body {
@@ -123,10 +134,25 @@
     <div class="container">
         <h1><a href="{{ url_for('home') }}">Termux Pastebin</a></h1>
 
+        {# --- Навигация с учетом статуса пользователя --- #}
+        <nav>
+            <a href="{{ url_for('home') }}">➕ Новая паста</a>
+            {# Проверяем, есть ли user_id в сессии #}
+            {% if session.user_id %}
+                | <a href="{{ url_for('my_pastes') }}">📋 Мои пасты</a>
+                | <span>Привет, {{ session.display_name or 'Пользователь' }}!</span>
+                <form action="{{ url_for('logout') }}" method="post" style="display: inline;">
+                    <button type="submit">Выйти</button>
+                </form>
+            {% else %}
+                | <a href="{{ url_for('login') }}">Войти</a>
+            {% endif %}
+        </nav>
+        {# --- Конец Навигации --- #}
+
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
             {% for category, message in messages %}
-              {# Используем category как класс CSS #}
               <div class="flash flash-{{ category }}">{{ message }}</div>
             {% endfor %}
           {% endif %}
@@ -136,7 +162,6 @@
         {# Сюда будет вставлено содержимое дочерних шаблонов #}
         {% endblock %}
     </div>
-
-    {% block scripts %}{% endblock %} <!-- Блок для доп. скриптов в конце body -->
+    {% block scripts %}{% endblock %}
 </body>
 </html>
