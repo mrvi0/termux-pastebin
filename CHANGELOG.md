@@ -5,6 +5,11 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/),
 и проект придерживается [Семантического Версионирования](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2025-04-27
+
+### Fixed
+- name 'username' is not defined
+
 ## [0.3.0] - 2025-04-27
 
 ### Added
