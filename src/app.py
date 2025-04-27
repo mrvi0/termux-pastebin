@@ -7,7 +7,6 @@ from pathlib import Path
 from authlib.integrations.flask_client import OAuth
 from flask import (
     Flask,
-    abort,
     flash,
     redirect,
     render_template,
@@ -289,55 +288,66 @@ def view_paste(paste_key: str):
 
     if not re.fullmatch(r"[a-zA-Z0-9]{5,12}", paste_key):
         logger.warning(f"Неверный формат ключа '{paste_key}' от {request.remote_addr}")
-        abort(404)
+        return render_template(
+            "view_paste.html",
+            paste_key=paste_key,
+            error_message="Неверный формат ключа пасты.",
+            content=None,
+        ), 404
 
     result = database.get_paste(paste_key)
     if result:
         content, language, author_user_id, is_public = result
-        # TODO: (Опционально) Получить display_name автора по author_user_id из БД users
-        author_name = None
-        # if author_user_id: ...
         current_user_id = session.get("user_id")
 
-        if not is_public:  # Если паста не публичная
+        # --- ПРОВЕРКА ДОСТУПА К ПРИВАТНОЙ ПАСТЕ ---
+        access_denied = False
+        if not is_public:  # Если паста приватная
             if current_user_id is None:  # А пользователь не авторизован
                 logger.warning(
                     f"Анонимный доступ запрещен к приватной пасте '{paste_key}'."
                 )
-                abort(403)  # Forbidden (или 404, чтобы скрыть существование)
+                access_denied = True
             elif current_user_id != author_user_id:  # И пользователь не автор
                 logger.warning(
                     f"Доступ пользователя {current_user_id} запрещен к приватной пасте '{paste_key}' (автор: {author_user_id})."
                 )
-                abort(403)  # Forbidden (или 404)
-            # Если пользователь автор - доступ разрешен
-            logger.info(
-                f"Доступ пользователя {current_user_id} разрешен к его приватной пасте '{paste_key}'."
-            )
+                access_denied = True
+
+        # --- Если доступ запрещен, рендерим шаблон с ошибкой ---
+        if access_denied:
+            return render_template(
+                "view_paste.html",
+                paste_key=paste_key,
+                error_message="Это приватная паста. Доступ есть только у автора.",
+                content=None,
+            ), 403  # Отдаем статус 403 Forbidden
+
+        # --- Если доступ разрешен ---
+        logger.info(
+            f"Доступ к пасте '{paste_key}' разрешен (public={is_public}, user={current_user_id}, author={author_user_id})."
+        )
+        author_name = None
+        # TODO: Получить имя автора по author_user_id
 
         return render_template(
             "view_paste.html",
             paste_key=paste_key,
             content=content,
             language=language,
-            author_name=author_name,  # Передаем имя автора в шаблон
+            is_public=is_public,  # Передаем статус
+            author_name=author_name,
         )
     else:
+        # Если паста не найдена в БД
         logger.warning(f"Паста '{paste_key}' не найдена.")
-        abort(404)
-
-
-# --- Обработчики Ошибок ---
-@app.errorhandler(404)
-def page_not_found(e: HTTPException):
-    """Обработчик для ошибки 404 (Страница не найдена)."""
-    logger.warning(
-        f"Запрос к несуществующей странице: {request.url} (от {request.remote_addr})"
-    )
-    # Можно отрендерить кастомный шаблон 404.html или просто текст
-    return render_template(
-        "view_paste.html", paste_key="404 Не найдено", content=None
-    ), 404
+        # Рендерим шаблон с сообщением "Не найдено" и статусом 404
+        return render_template(
+            "view_paste.html",
+            paste_key=paste_key,
+            error_message=f"Паста с ключом '{paste_key}' не найдена.",
+            content=None,
+        ), 404
 
 
 @app.errorhandler(Exception)

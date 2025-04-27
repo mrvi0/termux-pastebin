@@ -1,10 +1,24 @@
 {% extends "base.html" %}
 {% block title %}
-    {% if content %} Паста: {{ paste_key }} {% else %} Ошибка: Паста не найдена {% endif %}
+{% if error_message %}
+Ошибка доступа или не найдено
+{% elif content %}
+Паста: {{ paste_key }}
+{% else %}
+Паста не найдена
+{% endif %}
 {% endblock %}
 
 {% block content %}
-  {% if content %}
+  {% if error_message %}
+  <h2>⚠️ Ошибка</h2>
+  <p>{{ error_message }}</p>
+  {# Добавляем ссылку на главную #}
+  <hr style="border-color: #45475a;">
+  <a href="{{ url_for('home') }}">← На главную</a>
+
+  {# Если ошибки нет И есть контент (паста найдена и доступ разрешен) #}
+  {% elif content %}
   <div class="paste-info">
     Ключ: <strong>{{ paste_key }}</strong>
     {# Используем класс CSS вместо style #}
