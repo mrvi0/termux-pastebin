@@ -69,7 +69,7 @@ jobs:
               git fetch origin
               git checkout -f main || { echo "ERROR: Failed to checkout main branch"; exit 1; }
               git reset --hard origin/main || { echo "ERROR: Failed to reset to origin/main"; exit 1; }
-              git clean -fdx -e .env -e data/ -e venv/ -e pastebin-*.log -e *.pyc -e __pycache__/ || echo "Git clean failed or nothing to clean."
+              git clean -fdx -e .env -e data/ -e venv/ -e pastebin-*.log -e *.pyc -e __pycache__/ data/pastebin.pid || echo "Git clean failed or nothing to clean."
               echo "Code updated and cleaned."
 
               echo "Activating venv..."
