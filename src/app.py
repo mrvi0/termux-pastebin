@@ -81,14 +81,15 @@ except Exception as e:
 def home():
     """Отображает главную страницу с формой для создания пасты."""
     logger.info(f"Запрос главной страницы от {request.remote_addr}")
-    return render_template('home.html', username=username)
+    return render_template('home.html')
 
 @app.route('/', methods=['POST'])
 def create_paste():
     """Принимает данные из формы и создает новую пасту."""
-    logger.info(f"Попытка создания пасты от пользователя '{user}' ({request.remote_addr})")
+    user = request.remote_addr # Используем IP как идентификатор в логах
+    logger.info(f"Попытка создания пасты от '{user}'")
     content = request.form.get('content')
-    language = request.form.get('language') # Пока не используется
+    language = request.form.get('language')
 
     if not content or not content.strip():
         flash("Содержимое пасты не может быть пустым!", "danger")
