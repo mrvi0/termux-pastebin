@@ -185,3 +185,4 @@ $RECYCLE.BIN/
 *.tmp
 *.swp
 *.db
+.mypy__cache/
