@@ -134,10 +134,25 @@
     <div class="container">
         <h1><a href="{{ url_for('home') }}">Termux Pastebin</a></h1>
 
+        {# --- Навигация с учетом статуса пользователя --- #}
+        <nav>
+            <a href="{{ url_for('home') }}">➕ Новая паста</a>
+            {# Проверяем, есть ли user_id в сессии #}
+            {% if session.user_id %}
+                | <a href="{{ url_for('my_pastes') }}">📋 Мои пасты</a>
+                | <span>Привет, {{ session.display_name or 'Пользователь' }}!</span>
+                <form action="{{ url_for('logout') }}" method="post" style="display: inline;">
+                    <button type="submit">Выйти</button>
+                </form>
+            {% else %}
+                | <a href="{{ url_for('login') }}">Войти</a>
+            {% endif %}
+        </nav>
+        {# --- Конец Навигации --- #}
+
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
             {% for category, message in messages %}
-              {# Используем category как класс CSS #}
               <div class="flash flash-{{ category }}">{{ message }}</div>
             {% endfor %}
           {% endif %}
@@ -147,7 +162,6 @@
         {# Сюда будет вставлено содержимое дочерних шаблонов #}
         {% endblock %}
     </div>
-
-    {% block scripts %}{% endblock %} <!-- Блок для доп. скриптов в конце body -->
+    {% block scripts %}{% endblock %}
 </body>
 </html>

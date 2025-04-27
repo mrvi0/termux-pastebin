@@ -225,6 +225,20 @@ def create_paste():
         flash("Произошла ошибка при создании пасты.", "danger")
         return redirect(url_for('home'))
 
+@app.route('/my-pastes')
+def my_pastes():
+    """Отображает список паст текущего авторизованного пользователя."""
+    # Проверяем, есть ли пользователь в сессии
+    user_id = session.get('user_id')
+    if not user_id:
+        # Если не авторизован, перенаправляем на страницу входа
+        flash("Пожалуйста, войдите, чтобы просмотреть свои пасты.", "info")
+        return redirect(url_for('login'))
+
+    # Получаем пасты пользователя из БД
+    user_pastes = database.get_user_pastes(user_id) # Функция возвращает список словарей
+
+    return render_template('my_pastes.html', pastes=user_pastes)
 
 @app.route("/<paste_key>")
 def view_paste(paste_key: str):

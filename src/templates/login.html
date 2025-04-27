@@ -1,0 +1,14 @@
+<!-- templates/login.html -->
+{% extends "base.html" %}
+
+{% block title %}Вход{% endblock %}
+
+{% block content %}
+    <h2>Вход в систему</h2>
+    <p>Для доступа к созданию и просмотру ваших паст войдите с помощью Яндекса.</p>
+    <br>
+    {# Ссылка, которая инициирует OAuth флоу Яндекса #}
+    <a href="{{ url_for('login_yandex') }}">
+        <button>Войти через Яндекс</button>
+    </a>
+{% endblock %}
