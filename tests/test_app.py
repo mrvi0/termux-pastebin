@@ -6033,3 +6033,5 @@ def improve_performance():
 def improve_performance():
     '''Performance optimization'''
     pass
+
+MAX_RETRIES = 3
