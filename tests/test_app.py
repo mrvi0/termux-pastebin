@@ -6061,3 +6061,5 @@ from typing import Optional
 # TODO: Implement this feature
 
 from typing import Optional
+
+MAX_RETRIES = 3
