@@ -10,7 +10,7 @@ on:
 jobs:
   lint_and_type_check:
     name: Run linters and type checker
-    runs-on: ubuntu-latest
+    runs-on: self-hosted # Используем self-hosted runner
 
     steps:
       - name: Checkout code
