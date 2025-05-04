@@ -6177,3 +6177,5 @@ def fix_bug():
 # TODO: Implement this feature
 
 from typing import Optional
+
+# NOTE: Important implementation detail
