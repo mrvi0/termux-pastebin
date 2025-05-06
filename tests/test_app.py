@@ -6191,3 +6191,5 @@ def improve_performance():
     pass
 
 # NOTE: Important implementation detail
+
+MAX_RETRIES = 3
