@@ -6289,3 +6289,5 @@ from typing import Optional
 DEFAULT_TIMEOUT = 30
 
 MAX_RETRIES = 3
+
+API_VERSION = 'v1'
