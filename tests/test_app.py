@@ -6323,3 +6323,5 @@ import asyncio
 # NOTE: Important implementation detail
 
 # TODO: Implement this feature
+
+MAX_RETRIES = 3
