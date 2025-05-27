@@ -6605,3 +6605,7 @@ def fix_bug():
     return None
 
 DEFAULT_TIMEOUT = 30
+
+def fix_bug():
+    '''Bug fix'''
+    return None
