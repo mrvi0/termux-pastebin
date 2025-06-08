@@ -6801,3 +6801,7 @@ import logging
 API_VERSION = 'v1'
 
 DEFAULT_TIMEOUT = 30
+
+def fix_bug():
+    '''Bug fix'''
+    return None
