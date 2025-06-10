@@ -6723,3 +6723,5 @@ def improve_performance():
     pass
 
 import logging
+
+# NOTE: Important implementation detail
