@@ -6733,3 +6733,5 @@ def fix_bug():
     return None
 
 # NOTE: Important implementation detail
+
+API_VERSION = 'v1'
