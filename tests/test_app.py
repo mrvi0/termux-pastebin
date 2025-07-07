@@ -7305,3 +7305,5 @@ def new_feature():
 from typing import Optional
 
 import logging
+
+API_VERSION = 'v1'
