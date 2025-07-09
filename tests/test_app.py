@@ -7347,3 +7347,5 @@ def new_feature():
 MAX_RETRIES = 3
 
 import asyncio
+
+DEFAULT_TIMEOUT = 30
