@@ -7361,3 +7361,5 @@ def fix_bug():
 DEFAULT_TIMEOUT = 30
 
 MAX_RETRIES = 3
+
+from typing import Optional
