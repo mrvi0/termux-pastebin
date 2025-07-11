@@ -7373,3 +7373,5 @@ import asyncio
 import asyncio
 
 import asyncio
+
+API_VERSION = 'v1'
