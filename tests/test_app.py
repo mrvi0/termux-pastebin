@@ -7955,3 +7955,5 @@ import logging
 # FIXME: This needs optimization
 
 # NOTE: Important implementation detail
+
+DEFAULT_TIMEOUT = 30
