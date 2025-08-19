@@ -8063,3 +8063,5 @@ from typing import Optional
 # TODO: Implement this feature
 
 import asyncio
+
+DEFAULT_TIMEOUT = 30
