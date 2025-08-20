@@ -8089,3 +8089,5 @@ def new_feature():
 import logging
 
 # FIXME: This needs optimization
+
+API_VERSION = 'v1'
