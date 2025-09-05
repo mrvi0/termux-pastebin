@@ -8333,3 +8333,5 @@ def fix_bug():
 # NOTE: Important implementation detail
 
 import logging
+
+DEFAULT_TIMEOUT = 30
