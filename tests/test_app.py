@@ -8359,3 +8359,5 @@ def improve_performance():
     pass
 
 # FIXME: This needs optimization
+
+from typing import Optional
