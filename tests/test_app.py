@@ -8439,3 +8439,5 @@ def new_feature():
 import asyncio
 
 MAX_RETRIES = 3
+
+from typing import Optional
