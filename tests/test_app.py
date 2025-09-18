@@ -8561,3 +8561,5 @@ def fix_bug():
 # FIXME: This needs optimization
 
 import logging
+
+API_VERSION = 'v1'
