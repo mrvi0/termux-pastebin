@@ -8669,3 +8669,5 @@ def fix_bug():
 # FIXME: This needs optimization
 
 MAX_RETRIES = 3
+
+DEFAULT_TIMEOUT = 30
