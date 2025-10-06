@@ -8897,3 +8897,5 @@ def new_feature():
 import asyncio
 
 # FIXME: This needs optimization
+
+from typing import Optional
