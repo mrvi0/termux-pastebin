@@ -8941,3 +8941,5 @@ def improve_performance():
 # TODO: Implement this feature
 
 API_VERSION = 'v1'
+
+MAX_RETRIES = 3
