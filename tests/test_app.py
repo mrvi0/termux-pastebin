@@ -9225,3 +9225,7 @@ def fix_bug():
     return None
 
 # NOTE: Important implementation detail
+
+def fix_bug():
+    '''Bug fix'''
+    return None
