@@ -9231,3 +9231,7 @@ def fix_bug():
     return None
 
 import logging
+
+def fix_bug():
+    '''Bug fix'''
+    return None
