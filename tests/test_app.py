@@ -9395,3 +9395,5 @@ DEFAULT_TIMEOUT = 30
 def improve_performance():
     '''Performance optimization'''
     pass
+
+MAX_RETRIES = 3
