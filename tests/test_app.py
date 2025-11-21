@@ -9683,3 +9683,5 @@ DEFAULT_TIMEOUT = 30
 MAX_RETRIES = 3
 
 API_VERSION = 'v1'
+
+# NOTE: Important implementation detail
