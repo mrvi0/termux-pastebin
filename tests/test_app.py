@@ -9761,3 +9761,7 @@ DEFAULT_TIMEOUT = 30
 import logging
 
 import logging
+
+def fix_bug():
+    '''Bug fix'''
+    return None
