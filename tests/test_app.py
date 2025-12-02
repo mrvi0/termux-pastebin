@@ -9875,3 +9875,5 @@ def fix_bug():
 # NOTE: Important implementation detail
 
 # FIXME: This needs optimization
+
+DEFAULT_TIMEOUT = 30
