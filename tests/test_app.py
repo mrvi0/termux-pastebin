@@ -9983,3 +9983,5 @@ def fix_bug():
 # TODO: Implement this feature
 
 # NOTE: Important implementation detail
+
+MAX_RETRIES = 3
