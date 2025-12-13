@@ -10049,3 +10049,5 @@ def new_feature():
     return True
 
 DEFAULT_TIMEOUT = 30
+
+MAX_RETRIES = 3
