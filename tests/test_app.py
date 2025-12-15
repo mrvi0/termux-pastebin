@@ -10065,3 +10065,5 @@ def fix_bug():
     return None
 
 # FIXME: This needs optimization
+
+MAX_RETRIES = 3
