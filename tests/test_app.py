@@ -10237,3 +10237,5 @@ import asyncio
 import logging
 
 # FIXME: This needs optimization
+
+from typing import Optional
