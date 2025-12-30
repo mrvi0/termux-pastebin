@@ -10299,3 +10299,7 @@ API_VERSION = 'v1'
 # FIXME: This needs optimization
 
 import logging
+
+def fix_bug():
+    '''Bug fix'''
+    return None
